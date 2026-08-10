@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Anna's Planner</title>
+<style>
+  :root {
+    --bg-grad-start: #eef4fb;
+    --bg-grad-end: #dde9f6;
+    --surface: #ffffff;
+    --surface-soft: #f4f8fd;
+    --surface-hover: #e7f0fa;
+    --border-soft: #e3edf9;
+    --border: #d6e4f5;
+    --border-strong: #b8d0eb;
+    --text: #1a2b42;
+    --text-muted: #6a7d99;
+    --text-subtle: #9aabc2;
+    --primary: #4a90e2;
+    --primary-deep: #2c7be5;
+    --primary-darker: #1d5fc7;
+    --primary-tint: #eef4fb;
+    --amber: #f59e0b;
+    --amber-bg: #fff4dd;
+    --amber-text: #b15c00;
+    --green: #10b981;
+    --rose: #f43f5e;
+    --rose-bg: #ffe4e9;
+    --rose-text: #c81436;
+    --prio-high: #e5484d;
+    --prio-med: #f59e0b;
+    --prio-low: #8ba6c9;
+    --shadow-soft: 0 2px 10px rgba(74, 144, 226, 0.08);
+    --shadow-hover: 0 4px 18px rgba(74, 144, 226, 0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: #fafbfc;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('assets/math-pattern.svg');
+    background-repeat: repeat;
+    background-size: 540px 360px;
+    opacity: 0.09;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 auto 28px;
+    flex-wrap: wrap;
+    max-width: 1140px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-right: 4px;
+  }
+
+  .h1-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--primary-deep) 0%, #6aa9e8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .h1-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
+    flex-shrink: 0;
+  }
+
+  h1::after {
+    content: '';
+    display: block;
+    width: var(--week-progress, 0%);
+    max-width: 100%;
+    height: 2.5px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-deep));
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+  }
+
+  .week-display {
+    padding: 4px 14px;
+    font-weight: 600;
+    min-width: 220px;
+    text-align: center;
+    color: var(--text);
+  }
+
+  button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 7px;
+    background: var(--surface-hover);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--primary-deep);
+    font-family: inherit;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s, transform 0.1s;
+  }
+
+  button:hover { background: var(--border); color: var(--primary-darker); }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: var(--surface-hover); color: var(--primary-deep); }
+  button:disabled:hover { background: var(--surface-hover); color: var(--primary-deep); }
+
+  .summary {
+    display: flex;
+    gap: 18px;
+    padding: 8px 18px;
+    background: var(--surface);
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+  }
+
+  .summary span { color: var(--text-muted); }
+  .summary b { color: var(--primary-deep); font-weight: 700; }
+
+  .spacer { flex: 1; }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 880px) {
+    .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 580px) {
+    .columns { grid-template-columns: 1fr; }
+  }
+
+  .column {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+  }
+
+  .column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent, #6aa9e8) 0%, var(--accent-deep, #2c7be5) 50%, var(--accent, #6aa9e8) 100%);
+    border-radius: 14px 14px 0 0;
+  }
+
+  .column-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--accent-tint, var(--primary-tint));
+    color: var(--accent-deep, var(--primary-deep));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  .column-icon svg { width: 16px; height: 16px; }
+
+  .column-progress {
+    height: 6px;
+    background: var(--accent-tint, var(--primary-tint));
+    border-radius: 3px;
+    margin: -6px 0 12px;
+    overflow: hidden;
+  }
+
+  .column-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent, var(--primary)), var(--accent-deep, var(--primary-deep)));
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .column-progress-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-deep, var(--primary-deep));
+    letter-spacing: 0.2px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .column:hover { box-shadow: var(--shadow-hover); }
+
+  .column-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent-tint, var(--primary-tint));
+  }
+
+  .column-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    letter-spacing: -0.1px;
+    cursor: text;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .column-title:hover { background: var(--primary-tint); color: var(--primary-deep); }
+
+  .rename-input {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    font-family: inherit;
+    letter-spacing: -0.1px;
+    padding: 4px 8px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--surface);
+    flex: 1;
+    min-width: 0;
+    margin-right: 8px;
+  }
+
+  .rename-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.18);
+  }
+
+  .column-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  .column:hover .column-actions { opacity: 1; }
+
+  .icon-btn {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    background: transparent;
+    color: var(--text-subtle);
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 400;
+  }
+
+  .icon-btn:hover { background: var(--primary-tint); color: var(--primary-deep); }
+
+  .task-list { display: flex; flex-direction: column; gap: 7px; flex: 1; }
+
+  .task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: var(--surface-soft);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+    user-select: none;
+    position: relative;
+  }
+
+  .task::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 8px 0 0 8px;
+    background: transparent;
+    transition: background 0.15s;
+  }
+  .task.prio-high::before { background: var(--prio-high); }
+  .task.prio-med::before { background: var(--prio-med); }
+  .task.prio-low::before { background: var(--prio-low); }
+  .task.done::before { opacity: 0.35; }
+
+  .task:hover {
+    background: var(--surface-hover);
+    border-color: var(--border);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(74, 144, 226, 0.1);
+  }
+
+  .task .status-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    flex-shrink: 0;
+    background: var(--surface);
+    transition: all 0.15s;
+  }
+
+  .task.doing .status-dot {
+    border-color: var(--amber);
+    background: var(--amber);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+  }
+
+  .task.done .status-dot { border-color: var(--green); background: var(--green); }
+  .task.done .task-title { text-decoration: line-through; color: var(--text-subtle); }
+
+  .task.rollover .task-title::before {
+    content: '↻ ';
+    color: var(--primary);
+    font-size: 12px;
+  }
+
+  .task.dragging { opacity: 0.4; transform: scale(0.98); }
+
+  .column.drag-over {
+    background: var(--primary-tint);
+    box-shadow: 0 0 0 2px var(--primary) inset;
+  }
+
+  .task-title {
+    flex: 1;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    cursor: text;
+  }
+
+  .status-dot { cursor: pointer; }
+
+  .task-delete, .task-edit-btn { opacity: 0; transition: opacity 0.15s; }
+  .task-delete { color: var(--rose); font-size: 17px; }
+  .task-delete:hover { background: var(--rose-bg); color: var(--rose-text); }
+  .task:hover .task-delete, .task:hover .task-edit-btn { opacity: 1; }
+
+  .deadline-pill {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--primary-tint);
+    color: var(--primary-deep);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+  }
+
+  .deadline-pill.overdue { background: var(--rose-bg); color: var(--rose-text); }
+  .deadline-pill.today {
+    background: var(--amber-bg);
+    color: var(--amber-text);
+    animation: deadline-pulse 1.7s ease-in-out infinite;
+  }
+  .task.done .deadline-pill { background: var(--primary-tint); color: var(--text-subtle); animation: none; }
+
+  @keyframes deadline-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+    50%      { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+  }
+
+  .drag-handle {
+    width: 12px;
+    height: 16px;
+    color: var(--text-subtle);
+    opacity: 0;
+    transition: opacity 0.15s;
+    cursor: grab;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    margin-left: -4px;
+  }
+  .drag-handle svg { width: 12px; height: 16px; fill: currentColor; }
+  .task:hover .drag-handle { opacity: 0.55; }
+  .task.dragging .drag-handle { cursor: grabbing; }
+
+  .col-drag-handle {
+    width: 12px;
+    height: 18px;
+    color: var(--text-subtle);
+    opacity: 0;
+    transition: opacity 0.15s;
+    cursor: grab;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    margin-left: -4px;
+    margin-right: 2px;
+  }
+  .col-drag-handle svg { width: 12px; height: 16px; fill: currentColor; }
+  .column:hover .col-drag-handle { opacity: 0.5; }
+  .col-drag-handle:hover { opacity: 0.9; }
+  .column.col-dragging { opacity: 0.45; }
+  .column.cat-drop-before { box-shadow: inset 3px 0 0 0 var(--primary); }
+  .column.cat-drop-after { box-shadow: inset -3px 0 0 0 var(--primary); }
+
+  .task-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 2px solid var(--primary);
+    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.18);
+  }
+
+  .task-edit input {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .task-edit input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.18);
+  }
+
+  .task-edit-row { display: flex; gap: 6px; align-items: center; }
+  .task-edit-row input[type="date"] { flex: 1; min-width: 0; }
+  .task-edit button { padding: 6px 12px; font-size: 13px; font-weight: 600; }
+
+  .task-edit .save-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+    color: white;
+  }
+
+  .task-edit .save-btn:hover {
+    background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-darker) 100%);
+    color: white;
+  }
+
+  .prio-select {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .prio-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: 3px;
+  }
+  .prio-opt {
+    flex: 1;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 6px;
+  }
+  .prio-opt:hover { background: var(--primary-tint); color: var(--primary-deep); }
+  .prio-opt.active.prio-opt-high {
+    background: var(--rose-bg);
+    border-color: var(--prio-high);
+    color: var(--rose-text);
+  }
+  .prio-opt.active.prio-opt-med {
+    background: var(--amber-bg);
+    border-color: var(--prio-med);
+    color: var(--amber-text);
+  }
+  .prio-opt.active.prio-opt-low {
+    background: var(--primary-tint);
+    border-color: var(--prio-low);
+    color: var(--primary-darker);
+  }
+
+  .add-task { margin-top: 14px; }
+
+  .add-task.expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .add-task-toggle {
+    width: 100%;
+    padding: 9px 12px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px dashed var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, border-style 0.15s;
+  }
+
+  .add-task-toggle:hover {
+    background: var(--primary-tint);
+    color: var(--primary-deep);
+    border-color: var(--primary);
+    border-style: solid;
+  }
+
+  .add-task-title {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 14px;
+    background: var(--surface);
+    font-family: inherit;
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .add-task-title::placeholder { color: var(--text-subtle); }
+
+  .add-task-title:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.18);
+  }
+
+  .add-task-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .add-task-date {
+    flex: 1;
+    padding: 7px 8px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    color: var(--text-muted);
+    background: var(--surface-soft);
+    min-width: 0;
+    transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+
+  .add-task-date:focus {
+    outline: none;
+    border-color: var(--primary);
+    color: var(--text);
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.18);
+  }
+
+  .add-task-submit {
+    padding: 7px 14px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .add-task-submit:hover {
+    background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-darker) 100%);
+    color: white;
+  }
+
+  .add-task-cancel { font-size: 16px; color: var(--text-subtle); }
+  .add-task-cancel:hover { background: var(--rose-bg); color: var(--rose-text); }
+
+  .add-column-btn {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 14px;
+    border: 2px dashed var(--border-strong);
+    padding: 18px;
+    color: var(--text-muted);
+    font-size: 14px;
+    min-height: 220px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .add-column-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary-deep);
+    background: var(--surface);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .stats-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    max-width: 1140px;
+    margin: 0 auto 22px;
+    flex-wrap: wrap;
+  }
+
+  .overall-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .overall-ring {
+    width: 52px;
+    height: 52px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .overall-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .overall-ring .ring-bg { fill: none; stroke: var(--primary-tint); stroke-width: 3.2; }
+  .overall-ring .ring-fg {
+    fill: none;
+    stroke: var(--primary-deep);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .overall-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-deep);
+  }
+
+  .stats-text { display: flex; flex-direction: column; gap: 2px; }
+  .stats-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .stats-value { font-size: 14px; color: var(--text); font-weight: 600; }
+  .stats-value b { color: var(--primary-deep); font-weight: 700; }
+
+  .week-strip {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    background: var(--surface);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .week-strip-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    height: 50px;
+    justify-content: flex-end;
+    color: inherit;
+    font-family: inherit;
+  }
+  .week-strip-item:hover { background: transparent; }
+
+  .week-strip-bar-wrap {
+    height: 34px;
+    display: flex;
+    align-items: flex-end;
+    width: 16px;
+  }
+
+  .week-strip-bar {
+    width: 100%;
+    min-height: 4px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-deep));
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s, background 0.2s;
+  }
+
+  .week-strip-item.empty .week-strip-bar {
+    background: var(--border);
+  }
+
+  .week-strip-item.current .week-strip-bar {
+    background: linear-gradient(180deg, var(--primary-deep), var(--primary-darker));
+    box-shadow: 0 0 0 2px var(--primary-tint);
+  }
+
+  .week-strip-item:hover .week-strip-bar {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .week-strip-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .week-strip-item.current .week-strip-label { color: var(--primary-deep); }
+
+  .recurring-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+    align-self: flex-start;
+  }
+
+  .recurring-toggle svg { width: 13px; height: 13px; }
+
+  .recurring-toggle:hover {
+    background: var(--primary-tint);
+    color: var(--primary-deep);
+    border-color: var(--primary);
+  }
+
+  .recurring-toggle.active {
+    background: var(--primary-tint);
+    color: var(--primary-deep);
+    border-color: var(--primary);
+  }
+
+  .recurring-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--primary-deep);
+  }
+
+  .recurring-badge svg { width: 13px; height: 13px; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 43, 66, 0.32);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 22px 24px;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow: 0 12px 40px rgba(44, 123, 229, 0.25);
+    border: 1px solid var(--border-soft);
+  }
+
+  .modal-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .modal-body {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-btn-primary {
+    padding: 10px 14px;
+    background: var(--surface-soft);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .modal-btn-primary:hover {
+    background: var(--primary-tint);
+    color: var(--primary-deep);
+    border-color: var(--primary);
+  }
+
+  .modal-btn-cancel {
+    padding: 7px 14px;
+    background: transparent;
+    color: var(--text-subtle);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .modal-btn-cancel:hover { color: var(--text-muted); background: var(--surface-soft); }
+
+  .confetti-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confetti-fall 1.3s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+    will-change: transform, opacity;
+  }
+
+  @keyframes confetti-fall {
+    0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--dx), calc(var(--dy) + 280px)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-darker) 100%);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(44, 123, 229, 0.32);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .empty-state {
+    color: var(--text-subtle);
+    font-size: 13px;
+    text-align: center;
+    padding: 18px 0;
+    font-style: italic;
+  }
+
+  .legend {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 24px auto 0;
+    text-align: center;
+    padding: 12px;
+    max-width: 1140px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1><span class="h1-text"><span class="h1-dot"></span>Anna's Planner</span></h1>
+    <div class="week-nav">
+      <button id="prev-week" title="Previous week">◀</button>
+      <div class="week-display" id="week-display">—</div>
+      <button id="next-week" title="Next week">▶</button>
+    </div>
+    <button id="today-btn">Today</button>
+    <div class="summary" id="summary"></div>
+    <div class="spacer"></div>
+    <button id="undo-btn" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+    <button id="redo-btn" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+    <button id="export-btn" title="Download a JSON backup">Export</button>
+    <button id="import-btn" title="Restore from a JSON backup">Import</button>
+    <input type="file" id="import-file" accept=".json" style="display:none">
+  </header>
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="columns" id="columns"></div>
+  <div class="legend">Click the dot to cycle status (todo → working on → done). Click a task to edit it (set High/Med/Low priority there — a red, amber, or blue left stripe marks High/Med/Low and higher-priority tasks rise to the top of each category), or a category name to rename. Drag tasks between categories, or drag the grip in a category header to reorder categories. Recurring tasks repeat each week with a fresh todo — uncheck "Repeats weekly" or use the delete dialog to stop. Random stays by default (even when empty) but can be deleted like any category; other empty categories drop off when the week rolls over. Ctrl+Z / Ctrl+Y to undo / redo.</div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="recurring-delete-modal">
+    <div class="modal">
+      <div class="modal-title">Delete recurring task</div>
+      <div class="modal-body" id="recurring-delete-body"></div>
+      <div class="modal-actions">
+        <button class="modal-btn-primary" id="modal-delete-this">Delete only this one</button>
+        <button class="modal-btn-primary" id="modal-delete-all">Delete this and the following</button>
+        <button class="modal-btn-cancel" id="modal-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STORAGE_KEY = 'weekly-planner-v1';
+const STATUSES = ['todo', 'doing', 'done'];
+const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Errands', 'Random'];
+const PROTECTED_CATEGORY = 'Random';
+const MAX_UNDO = 50;
+const HISTORY_WEEKS = 4;
+const FUTURE_WEEKS = 4;
+
+const PALETTE = [
+  { primary: '#4a90e2', deep: '#2c7be5', tint: '#eef4fb', soft: '#dbe8f7' },
+  { primary: '#6c7ce0', deep: '#4d61cc', tint: '#ecedf9', soft: '#dadcf3' },
+  { primary: '#14b8a6', deep: '#0d9488', tint: '#e6faf6', soft: '#c5f0e7' },
+  { primary: '#8b6dd6', deep: '#6e4cc4', tint: '#f1ecf9', soft: '#e0d4f1' },
+  { primary: '#1e88e5', deep: '#1565c0', tint: '#e3f0fc', soft: '#bfdcf6' },
+  { primary: '#06b6d4', deep: '#0891b2', tint: '#e0f7fb', soft: '#b8eaf2' },
+  { primary: '#5f6df0', deep: '#4351d6', tint: '#ecedfd', soft: '#d3d6f8' },
+  { primary: '#7aa9d6', deep: '#5b8ec0', tint: '#eef4f9', soft: '#d6e2ef' }
+];
+
+const ICONS = {
+  briefcase: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5.5" width="12" height="8" rx="1.2"/><path d="M6 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5"/><path d="M2 9h12"/></svg>`,
+  heart: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13.2s-5.2-3.3-5.2-7.2a3 3 0 0 1 5.2-2 3 3 0 0 1 5.2 2c0 3.9-5.2 7.2-5.2 7.2z"/></svg>`,
+  bag: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h9l-.8 8.2a1 1 0 0 1-1 .8H5.3a1 1 0 0 1-1-.8z"/><path d="M5.5 5a2.5 2.5 0 1 1 5 0"/></svg>`,
+  house: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8L8 3l5.5 5"/><path d="M4 7.5v6h8v-6"/><path d="M7 13.5v-3h2v3"/></svg>`,
+  book: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.5a1.5 1.5 0 0 1 1.5-1.5H8v11H4.5A1.5 1.5 0 0 1 3 11.5z"/><path d="M13 3.5a1.5 1.5 0 0 0-1.5-1.5H8v11h3.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>`,
+  rocket: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5C7 4 5 7 5 11l3 0c0-3 3-6 4.5-7.5z"/><path d="M5 11l-2 1 1 2 2-1"/><circle cx="10" cy="6" r="0.9"/></svg>`,
+  star: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.8 4 4.2.5-3.1 2.9.8 4.1-3.7-2-3.7 2 .8-4.1L2 6.5 6.2 6z"/></svg>`,
+  sparkle: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/><path d="M4.2 4.2L6 6M10 10l1.8 1.8M11.8 4.2L10 6M6 10l-1.8 1.8"/></svg>`,
+  people: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5.5" r="2"/><path d="M2 13c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5"/><circle cx="11" cy="6.5" r="1.7"/><path d="M14 13c0-1.7-1.3-3-3-3"/></svg>`,
+  pencil: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5l2 2L5 13H3v-2z"/><path d="M10.5 3.5l2 2"/></svg>`,
+  dumbbell: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="6" width="2" height="4" rx="0.5"/><rect x="3.5" y="7" width="2" height="2"/><path d="M5.5 8h5"/><rect x="10.5" y="7" width="2" height="2"/><rect x="12.5" y="6" width="2" height="4" rx="0.5"/></svg>`,
+  airplane: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l5-1 4-5 1 1-3 5 4 4-1 1-5-3-2 3-1-3-3-1z"/></svg>`,
+  coin: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v6"/><path d="M6 7c0-1 .8-1.5 2-1.5S10 6 10 7c0 .9-.6 1-2 1s-2 .2-2 1c0 1 .8 1.5 2 1.5S10 10 10 9"/></svg>`,
+  repeat: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a5 5 0 0 1 8.5-3.5L13 5"/><path d="M13 2v3h-3"/><path d="M13 9a5 5 0 0 1-8.5 3.5L3 11"/><path d="M3 14v-3h3"/></svg>`
+};
+
+function pickIcon(name) {
+  const n = (name || '').toLowerCase();
+  if (/work|job|career|office|client|project/.test(n)) return 'briefcase';
+  if (/personal|self|me\b|life/.test(n)) return 'heart';
+  if (/errand|shop|chore|grocer|store/.test(n)) return 'bag';
+  if (/home|house|garden|clean/.test(n)) return 'house';
+  if (/study|learn|school|class|read|book/.test(n)) return 'book';
+  if (/fitness|gym|exercise|health|workout|run/.test(n)) return 'dumbbell';
+  if (/goal|launch|plan|future/.test(n)) return 'rocket';
+  if (/family|friend|social|peopl/.test(n)) return 'people';
+  if (/write|note|journal|blog/.test(n)) return 'pencil';
+  if (/travel|trip|vacation|flight/.test(n)) return 'airplane';
+  if (/finance|money|budget|bill/.test(n)) return 'coin';
+  if (/fun|hobby|favorite/.test(n)) return 'star';
+  return 'sparkle';
+}
+
+function createCategoryMeta(name, index) {
+  return { name, icon: pickIcon(name), colorIndex: index % PALETTE.length };
+}
+
+function getColor(cat) {
+  return PALETTE[(cat && cat.colorIndex) || 0];
+}
+
+let state = loadState();
+let viewWeekId = getISOWeek(new Date());
+let editingId = null;
+let editingCategory = null;
+let addingFor = null;
+let draggingCat = null;
+let undoStack = [];
+let redoStack = [];
+let lastSavedSnapshot = JSON.stringify(state);
+
+function defaultState() {
+  return {
+    tasks: [],
+    categories: DEFAULT_CATEGORIES.map((n, i) => createCategoryMeta(n, i)),
+    lastRolloverWeek: null,
+    stoppedRecurrences: [],
+    skippedRecurrences: [],
+    randomRemoved: false
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    parsed.tasks = parsed.tasks || [];
+    parsed.stoppedRecurrences = parsed.stoppedRecurrences || [];
+    parsed.skippedRecurrences = parsed.skippedRecurrences || [];
+    parsed.randomRemoved = parsed.randomRemoved || false;
+    if (!parsed.categories || !parsed.categories.length) {
+      parsed.categories = DEFAULT_CATEGORIES.map((n, i) => createCategoryMeta(n, i));
+    } else if (typeof parsed.categories[0] === 'string') {
+      parsed.categories = parsed.categories.map((n, i) => createCategoryMeta(n, i));
+    } else {
+      parsed.categories = parsed.categories.map((c, i) => ({
+        name: c.name,
+        icon: c.icon || pickIcon(c.name),
+        colorIndex: typeof c.colorIndex === 'number' ? c.colorIndex : i % PALETTE.length
+      }));
+    }
+    return parsed;
+  } catch {
+    return defaultState();
+  }
+}
+
+function saveState() {
+  if (lastSavedSnapshot !== null) {
+    undoStack.push(lastSavedSnapshot);
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    redoStack = [];
+  }
+  const snap = JSON.stringify(state);
+  lastSavedSnapshot = snap;
+  localStorage.setItem(STORAGE_KEY, snap);
+}
+
+function saveStateNoUndo() {
+  const snap = JSON.stringify(state);
+  lastSavedSnapshot = snap;
+  localStorage.setItem(STORAGE_KEY, snap);
+}
+
+function reorderCategory(fromName, targetName, after) {
+  if (fromName === targetName) return;
+  const fromIdx = state.categories.findIndex(c => c.name === fromName);
+  if (fromIdx === -1) return;
+  const [moved] = state.categories.splice(fromIdx, 1);
+  const targetIdx = state.categories.findIndex(c => c.name === targetName);
+  if (targetIdx === -1) {
+    state.categories.splice(fromIdx, 0, moved);
+    return;
+  }
+  state.categories.splice(targetIdx + (after ? 1 : 0), 0, moved);
+  saveState();
+  render();
+}
+
+function ensureRandomCategory() {
+  if (state.randomRemoved) return;
+  if (!state.categories.some(c => c.name === PROTECTED_CATEGORY)) {
+    state.categories.push(createCategoryMeta(PROTECTED_CATEGORY, state.categories.length));
+  }
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(lastSavedSnapshot);
+  const prev = undoStack.pop();
+  state = JSON.parse(prev);
+  lastSavedSnapshot = prev;
+  localStorage.setItem(STORAGE_KEY, prev);
+  editingId = null;
+  editingCategory = null;
+  addingFor = null;
+  render();
+  showToast('Undone');
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(lastSavedSnapshot);
+  const next = redoStack.pop();
+  state = JSON.parse(next);
+  lastSavedSnapshot = next;
+  localStorage.setItem(STORAGE_KEY, next);
+  editingId = null;
+  editingCategory = null;
+  addingFor = null;
+  render();
+  showToast('Redone');
+}
+
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+function compareWeeks(a, b) {
+  const [ay, aw] = a.split('-W').map(Number);
+  const [by, bw] = b.split('-W').map(Number);
+  if (ay !== by) return ay - by;
+  return aw - bw;
+}
+
+function getWeekDates(weekId) {
+  const [year, week] = weekId.split('-W').map(Number);
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const week1Monday = new Date(jan4);
+  week1Monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
+  const start = new Date(week1Monday);
+  start.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 6);
+  return { start, end };
+}
+
+function shiftWeek(weekId, delta) {
+  const { start } = getWeekDates(weekId);
+  const moved = new Date(start);
+  moved.setUTCDate(start.getUTCDate() + delta * 7);
+  return getISOWeek(new Date(moved.getUTCFullYear(), moved.getUTCMonth(), moved.getUTCDate()));
+}
+
+function formatWeek(weekId) {
+  const { start, end } = getWeekDates(weekId);
+  const fmt = d => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const weekNum = weekId.split('-W')[1];
+  return `Week ${weekNum} · ${fmt(start)} – ${fmt(end)}`;
+}
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDeadline(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((date - today) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays === -1) return 'Yesterday';
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function deadlineClass(dateStr, status) {
+  if (!dateStr || status === 'done') return '';
+  const today = todayStr();
+  if (dateStr < today) return 'overdue';
+  if (dateStr === today) return 'today';
+  return '';
+}
+
+function getWeekProgress() {
+  const now = new Date();
+  const dayNum = now.getDay() || 7;
+  const hourFrac = (now.getHours() + now.getMinutes() / 60) / 24;
+  return Math.min(100, Math.max(0, ((dayNum - 1 + hourFrac) / 7) * 100));
+}
+
+function confetti(x, y, opts = {}) {
+  const count = opts.count || 24;
+  const colors = opts.colors || ['#4a90e2', '#6aa9e8', '#2c7be5', '#10b981', '#f59e0b', '#8b6dd6'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+    const velocity = 70 + Math.random() * 110;
+    const dx = Math.cos(angle) * velocity;
+    const dy = Math.sin(angle) * velocity;
+    const size = 6 + Math.random() * 6;
+    piece.style.left = x + 'px';
+    piece.style.top = y + 'px';
+    piece.style.width = size + 'px';
+    piece.style.height = size + 'px';
+    piece.style.background = colors[i % colors.length];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.setProperty('--dx', dx + 'px');
+    piece.style.setProperty('--dy', dy + 'px');
+    piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 1500);
+  }
+}
+
+function getRecentWeeks(count) {
+  const current = getISOWeek(new Date());
+  const out = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const wid = i === 0 ? current : shiftWeek(current, -i);
+    const tasks = state.tasks.filter(t => t.weekId === wid);
+    const done = tasks.filter(t => t.status === 'done').length;
+    out.push({ wid, total: tasks.length, done, isCurrent: wid === current });
+  }
+  return out;
+}
+
+function skipKey(recurrenceId, weekId) {
+  return `${recurrenceId}|${weekId}`;
+}
+
+function ensureRecurringInstances(currentWeek) {
+  const stopped = new Set(state.stoppedRecurrences || []);
+  const skipped = new Set(state.skippedRecurrences || []);
+  const latestByRecurrence = new Map();
+  const weeksByRecurrence = new Map();
+  for (const t of state.tasks) {
+    if (!t.recurrenceId || stopped.has(t.recurrenceId)) continue;
+    if (!weeksByRecurrence.has(t.recurrenceId)) weeksByRecurrence.set(t.recurrenceId, new Set());
+    weeksByRecurrence.get(t.recurrenceId).add(t.weekId);
+    const existing = latestByRecurrence.get(t.recurrenceId);
+    if (!existing || compareWeeks(t.weekId, existing.weekId) > 0) {
+      latestByRecurrence.set(t.recurrenceId, t);
+    }
+  }
+  const targetWeeks = [currentWeek];
+  for (let i = 1; i <= FUTURE_WEEKS; i++) targetWeeks.push(shiftWeek(currentWeek, i));
+
+  let added = 0;
+  for (const latest of latestByRecurrence.values()) {
+    if (latest.recurrence !== 'weekly') continue;
+    const filled = weeksByRecurrence.get(latest.recurrenceId);
+    for (const week of targetWeeks) {
+      if (filled.has(week)) continue;
+      if (skipped.has(skipKey(latest.recurrenceId, week))) continue;
+      state.tasks.push({
+        id: uid(),
+        weekId: week,
+        category: latest.category,
+        title: latest.title,
+        status: 'todo',
+        createdAt: new Date().toISOString(),
+        deadline: null,
+        rolledOver: false,
+        priority: latest.priority || null,
+        recurrence: 'weekly',
+        recurrenceId: latest.recurrenceId
+      });
+      filled.add(week);
+      added++;
+    }
+  }
+  return added;
+}
+
+function pruneOldWeeks(currentWeek) {
+  const cutoff = shiftWeek(currentWeek, -HISTORY_WEEKS);
+  const before = state.tasks.length;
+  state.tasks = state.tasks.filter(t => compareWeeks(t.weekId, cutoff) >= 0);
+  state.skippedRecurrences = (state.skippedRecurrences || []).filter(key => {
+    const week = key.split('|')[1];
+    return week && compareWeeks(week, cutoff) >= 0;
+  });
+  return before - state.tasks.length;
+}
+
+function stopRecurrence(task) {
+  if (!task.recurrenceId) return;
+  state.stoppedRecurrences = state.stoppedRecurrences || [];
+  if (!state.stoppedRecurrences.includes(task.recurrenceId)) {
+    state.stoppedRecurrences.push(task.recurrenceId);
+  }
+  state.tasks = state.tasks.filter(t =>
+    t.recurrenceId !== task.recurrenceId || compareWeeks(t.weekId, task.weekId) < 0
+  );
+}
+
+function rolloverIfNeeded() {
+  const currentWeek = getISOWeek(new Date());
+  if (state.lastRolloverWeek === currentWeek) {
+    ensureRandomCategory();
+    ensureRecurringInstances(currentWeek);
+    pruneOldWeeks(currentWeek);
+    saveStateNoUndo();
+    return 0;
+  }
+  let count = 0;
+  state.tasks.forEach(t => {
+    if (t.recurrence === 'weekly') return;
+    if (t.status !== 'done' && compareWeeks(t.weekId, currentWeek) < 0) {
+      t.weekId = currentWeek;
+      t.rolledOver = true;
+      count++;
+    }
+  });
+  ensureRecurringInstances(currentWeek);
+  pruneOldWeeks(currentWeek);
+  const usedCats = new Set(state.tasks.map(t => t.category));
+  state.categories = state.categories.filter(c => c.name === PROTECTED_CATEGORY || usedCats.has(c.name));
+  ensureRandomCategory();
+  state.lastRolloverWeek = currentWeek;
+  saveStateNoUndo();
+  return count;
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function showRecurringDeleteModal(task) {
+  const overlay = document.getElementById('recurring-delete-modal');
+  document.getElementById('recurring-delete-body').textContent = `"${task.title}" repeats weekly. What would you like to delete?`;
+  overlay.classList.add('show');
+  const close = () => overlay.classList.remove('show');
+  document.getElementById('modal-delete-this').onclick = () => {
+    close();
+    state.tasks = state.tasks.filter(t => t.id !== task.id);
+    if (task.recurrenceId) {
+      state.skippedRecurrences = state.skippedRecurrences || [];
+      const key = skipKey(task.recurrenceId, task.weekId);
+      if (!state.skippedRecurrences.includes(key)) {
+        state.skippedRecurrences.push(key);
+      }
+    }
+    saveState();
+    render();
+  };
+  document.getElementById('modal-delete-all').onclick = () => {
+    close();
+    stopRecurrence(task);
+    saveState();
+    render();
+  };
+  document.getElementById('modal-cancel').onclick = close;
+  overlay.onclick = e => { if (e.target === overlay) close(); };
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderTask(t) {
+  if (t.id === editingId) {
+    const isRec = t.recurrence === 'weekly';
+    return `
+      <div class="task-edit" data-edit-id="${t.id}">
+        <input type="text" class="edit-title" value="${escapeHtml(t.title)}" placeholder="Task title">
+        <div class="task-edit-row">
+          <input type="date" class="edit-deadline" value="${t.deadline || ''}">
+          <button class="save-btn" data-save="${t.id}">Save</button>
+          <button data-cancel="${t.id}">Cancel</button>
+        </div>
+        <div class="prio-select" data-prio-select="${t.id}">
+          <span class="prio-label">Priority</span>
+          <button type="button" class="prio-opt prio-opt-high${t.priority === 'high' ? ' active' : ''}" data-prio="high">High</button>
+          <button type="button" class="prio-opt prio-opt-med${t.priority === 'med' ? ' active' : ''}" data-prio="med">Med</button>
+          <button type="button" class="prio-opt prio-opt-low${!t.priority ? ' active' : ''}" data-prio="low">Low</button>
+        </div>
+        <button type="button" class="recurring-toggle ${isRec ? 'active' : ''}" data-edit-recurring="${t.id}" title="Toggle weekly repeat">
+          ${ICONS.repeat}<span>Repeats weekly</span>
+        </button>
+      </div>
+    `;
+  }
+  const dCls = deadlineClass(t.deadline, t.status);
+  const pill = t.deadline
+    ? `<span class="deadline-pill ${dCls}">${escapeHtml(formatDeadline(t.deadline))}</span>`
+    : '';
+  const recBadge = t.recurrence === 'weekly'
+    ? `<span class="recurring-badge" title="Repeats weekly">${ICONS.repeat}</span>`
+    : '';
+  const prioCls = t.priority === 'high' ? ' prio-high' : t.priority === 'med' ? ' prio-med' : ' prio-low';
+  return `
+    <div class="task ${t.status}${t.rolledOver ? ' rollover' : ''}${prioCls}" data-id="${t.id}" draggable="true">
+      <span class="drag-handle" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="6" cy="4" r="1.1"/><circle cx="6" cy="8" r="1.1"/><circle cx="6" cy="12" r="1.1"/><circle cx="10" cy="4" r="1.1"/><circle cx="10" cy="8" r="1.1"/><circle cx="10" cy="12" r="1.1"/></svg></span>
+      <div class="status-dot" data-toggle-status="${t.id}" title="Cycle status"></div>
+      <div class="task-title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
+      ${recBadge}
+      ${pill}
+      <button class="icon-btn task-delete" data-delete="${t.id}" title="Delete">×</button>
+    </div>
+  `;
+}
+
+function saveEdit(id) {
+  const editEl = document.querySelector(`[data-edit-id="${id}"]`);
+  if (!editEl) return;
+  const title = editEl.querySelector('.edit-title').value.trim();
+  const deadline = editEl.querySelector('.edit-deadline').value || null;
+  const recToggle = editEl.querySelector('[data-edit-recurring]');
+  const wantsRecurring = recToggle && recToggle.classList.contains('active');
+  const prioEl = editEl.querySelector('.prio-opt.active');
+  const prio = prioEl ? prioEl.dataset.prio : 'low';
+  const task = state.tasks.find(t => t.id === id);
+  if (!task || !title) return;
+  task.title = title;
+  task.deadline = deadline;
+  task.priority = (prio === 'high' || prio === 'med') ? prio : null;
+  if (wantsRecurring) {
+    task.recurrence = 'weekly';
+    if (!task.recurrenceId) task.recurrenceId = uid();
+    if (state.stoppedRecurrences) {
+      state.stoppedRecurrences = state.stoppedRecurrences.filter(rid => rid !== task.recurrenceId);
+    }
+    state.skippedRecurrences = (state.skippedRecurrences || [])
+      .filter(key => key.split('|')[0] !== task.recurrenceId);
+    ensureRecurringInstances(getISOWeek(new Date()));
+  } else if (task.recurrenceId) {
+    const recurrenceId = task.recurrenceId;
+    task.recurrence = null;
+    task.recurrenceId = null;
+    stopRecurrence({ recurrenceId, weekId: shiftWeek(task.weekId, 1) });
+  }
+  editingId = null;
+  saveState();
+  render();
+}
+
+function submitAddTask(cat) {
+  if (!cat) return;
+  const titleInput = document.querySelector(`.add-task-title[data-add-cat="${CSS.escape(cat)}"]`);
+  const dateInput = document.querySelector(`.add-task-date[data-add-cat-date="${CSS.escape(cat)}"]`);
+  if (!titleInput) return;
+  const title = titleInput.value.trim();
+  if (!title) return;
+  const recurringToggle = document.querySelector(`[data-add-recurring="${CSS.escape(cat)}"]`);
+  const isRecurring = recurringToggle && recurringToggle.classList.contains('active');
+  state.tasks.push({
+    id: uid(),
+    weekId: viewWeekId,
+    category: cat,
+    title,
+    status: 'todo',
+    createdAt: new Date().toISOString(),
+    deadline: dateInput && dateInput.value ? dateInput.value : null,
+    rolledOver: false,
+    priority: null,
+    recurrence: isRecurring ? 'weekly' : null,
+    recurrenceId: isRecurring ? uid() : null
+  });
+  if (isRecurring) ensureRecurringInstances(getISOWeek(new Date()));
+  saveState();
+  render();
+  const nextInput = document.querySelector(`.add-task-title[data-add-cat="${CSS.escape(cat)}"]`);
+  if (nextInput) nextInput.focus();
+}
+
+function renderStatsBar(done, total) {
+  const el = document.getElementById('stats-bar');
+  if (!el) return;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const weeks = getRecentWeeks(5);
+  el.innerHTML = `
+    <div class="overall-progress">
+      <div class="overall-ring">
+        <svg viewBox="0 0 36 36">
+          <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+          <circle class="ring-fg" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="${pct} 100"/>
+        </svg>
+        <div class="overall-ring-label">${pct}%</div>
+      </div>
+      <div class="stats-text">
+        <div class="stats-label">This week</div>
+        <div class="stats-value">${done} of ${total} done</div>
+      </div>
+    </div>
+    <div class="week-strip">
+      ${weeks.map(w => {
+        const wpct = w.total ? (w.done / w.total) : 0;
+        const h = 4 + Math.round(wpct * 30);
+        const wn = w.wid.split('-W')[1];
+        return `<button class="week-strip-item${w.isCurrent ? ' current' : ''}${w.total === 0 ? ' empty' : ''}" data-week-jump="${w.wid}" title="Week ${wn}: ${w.done}/${w.total} done">
+          <div class="week-strip-bar-wrap"><div class="week-strip-bar" style="height: ${h}px"></div></div>
+          <span class="week-strip-label">W${wn}</span>
+        </button>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function render() {
+  document.getElementById('week-display').textContent = formatWeek(viewWeekId);
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+  if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+
+  const h1 = document.querySelector('h1');
+  if (h1) h1.style.setProperty('--week-progress', getWeekProgress() + '%');
+
+  const tasksThisWeek = state.tasks.filter(t => t.weekId === viewWeekId);
+  const total = tasksThisWeek.length;
+  const done = tasksThisWeek.filter(t => t.status === 'done').length;
+  const doing = tasksThisWeek.filter(t => t.status === 'doing').length;
+  document.getElementById('summary').innerHTML =
+    `<span>Done <b>${done}</b>/${total}</span><span>Working on <b>${doing}</b></span>`;
+
+  renderStatsBar(done, total);
+
+  const columnsEl = document.getElementById('columns');
+  columnsEl.innerHTML = '';
+
+  state.categories.forEach(cat => {
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.dataset.cat = cat.name;
+    const color = getColor(cat);
+    col.style.setProperty('--accent', color.primary);
+    col.style.setProperty('--accent-deep', color.deep);
+    col.style.setProperty('--accent-tint', color.tint);
+    col.style.setProperty('--accent-soft', color.soft);
+
+    const prioRank = { high: 0, med: 1 };
+    const tasks = tasksThisWeek.filter(t => t.category === cat.name)
+      .sort((a, b) => (prioRank[a.priority] ?? 2) - (prioRank[b.priority] ?? 2));
+    const colDone = tasks.filter(t => t.status === 'done').length;
+    const colTotal = tasks.length;
+    const colPct = colTotal ? (colDone / colTotal) * 100 : 0;
+
+    const titleHTML = editingCategory === cat.name
+      ? `<input type="text" class="rename-input" value="${escapeHtml(cat.name)}" data-old-cat="${escapeHtml(cat.name)}">`
+      : `<span class="column-title" data-rename-cat="${escapeHtml(cat.name)}" title="Click to rename">${escapeHtml(cat.name)}</span>`;
+
+    const deleteBtn = `<button class="icon-btn" data-delete-cat="${escapeHtml(cat.name)}" title="Delete category">×</button>`;
+    col.innerHTML = `
+      <div class="column-header">
+        <span class="col-drag-handle" draggable="true" data-drag-cat="${escapeHtml(cat.name)}" title="Drag to reorder"><svg viewBox="0 0 16 16"><circle cx="6" cy="4" r="1.1"/><circle cx="6" cy="8" r="1.1"/><circle cx="6" cy="12" r="1.1"/><circle cx="10" cy="4" r="1.1"/><circle cx="10" cy="8" r="1.1"/><circle cx="10" cy="12" r="1.1"/></svg></span>
+        <div class="column-icon">${ICONS[cat.icon] || ICONS.sparkle}</div>
+        ${titleHTML}
+        <span class="column-progress-text">${colDone}/${colTotal}</span>
+        <div class="column-actions">${deleteBtn}</div>
+      </div>
+      <div class="column-progress" title="${colDone}/${colTotal} done">
+        <div class="column-progress-fill" style="width: ${colPct}%"></div>
+      </div>
+      <div class="task-list">
+        ${tasks.length === 0 ? '<div class="empty-state">No tasks yet</div>' : ''}
+        ${tasks.map(t => renderTask(t)).join('')}
+      </div>
+      <div class="add-task${addingFor === cat.name ? ' expanded' : ''}">
+        ${addingFor === cat.name
+          ? `
+            <input type="text" class="add-task-title" data-add-cat="${escapeHtml(cat.name)}" placeholder="Task title...">
+            <div class="add-task-controls">
+              <input type="date" class="add-task-date" data-add-cat-date="${escapeHtml(cat.name)}" title="Deadline (optional)">
+              <button class="add-task-submit" data-add-submit="${escapeHtml(cat.name)}">Add</button>
+              <button class="icon-btn add-task-cancel" data-add-cancel="${escapeHtml(cat.name)}" title="Close">×</button>
+            </div>
+            <button type="button" class="recurring-toggle" data-add-recurring="${escapeHtml(cat.name)}" title="Toggle weekly repeat">
+              ${ICONS.repeat}<span>Repeats weekly</span>
+            </button>
+          `
+          : `<button class="add-task-toggle" data-add-toggle="${escapeHtml(cat.name)}">+ Add task</button>`
+        }
+      </div>
+    `;
+    columnsEl.appendChild(col);
+  });
+
+  const addCol = document.createElement('button');
+  addCol.className = 'add-column-btn';
+  addCol.textContent = '+ Add category';
+  addCol.onclick = () => {
+    const name = prompt('Category name:');
+    if (name && name.trim()) {
+      const trimmed = name.trim();
+      if (state.categories.some(c => c.name === trimmed)) {
+        showToast('That category already exists');
+        return;
+      }
+      state.categories.push(createCategoryMeta(trimmed, state.categories.length));
+      if (trimmed === PROTECTED_CATEGORY) state.randomRemoved = false;
+      saveState();
+      render();
+    }
+  };
+  columnsEl.appendChild(addCol);
+
+  bindHandlers();
+}
+
+function bindHandlers() {
+  document.querySelectorAll('.task').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-delete]')) return;
+      if (e.target.closest('.drag-handle')) return;
+      const id = el.dataset.id;
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      if (e.target.closest('[data-toggle-status]')) {
+        const dotEl = e.target.closest('[data-toggle-status]');
+        const r = dotEl.getBoundingClientRect();
+        const dotX = r.left + r.width / 2;
+        const dotY = r.top + r.height / 2;
+        const colEl = el.closest('.column');
+        const cr = colEl ? colEl.getBoundingClientRect() : null;
+        const idx = STATUSES.indexOf(task.status);
+        const newStatus = STATUSES[(idx + 1) % STATUSES.length];
+        task.status = newStatus;
+        task.rolledOver = false;
+        saveState();
+        if (newStatus === 'done') {
+          const meta = state.categories.find(c => c.name === task.category);
+          const color = getColor(meta);
+          const palette = [color.primary, color.deep, '#10b981', '#f59e0b', '#8b6dd6'];
+          confetti(dotX, dotY, { count: 18, colors: palette });
+          const catTasks = state.tasks.filter(t => t.weekId === viewWeekId && t.category === task.category);
+          if (catTasks.length > 0 && catTasks.every(t => t.status === 'done') && cr) {
+            setTimeout(() => {
+              confetti(cr.left + cr.width / 2, cr.top + 70, { count: 70, colors: palette });
+            }, 250);
+          }
+        }
+        render();
+        return;
+      }
+      editingId = id;
+      render();
+      const editEl = document.querySelector(`[data-edit-id="${editingId}"]`);
+      if (editEl) {
+        const titleInput = editEl.querySelector('.edit-title');
+        titleInput.focus();
+        titleInput.select();
+      }
+    });
+
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', el.dataset.id);
+      e.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      document.querySelectorAll('.column.drag-over').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+
+  document.querySelectorAll('.column').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (draggingCat) {
+        const r = col.getBoundingClientRect();
+        const after = e.clientX > r.left + r.width / 2;
+        col.classList.toggle('cat-drop-after', after);
+        col.classList.toggle('cat-drop-before', !after);
+        return;
+      }
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', e => {
+      if (!col.contains(e.relatedTarget)) {
+        col.classList.remove('drag-over', 'cat-drop-before', 'cat-drop-after');
+      }
+    });
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over', 'cat-drop-before', 'cat-drop-after');
+      const targetCat = col.dataset.cat;
+      if (draggingCat) {
+        const r = col.getBoundingClientRect();
+        const after = e.clientX > r.left + r.width / 2;
+        reorderCategory(draggingCat, targetCat, after);
+        return;
+      }
+      const id = e.dataTransfer.getData('text/plain');
+      const task = state.tasks.find(t => t.id === id);
+      if (task && task.category !== targetCat) {
+        task.category = targetCat;
+        saveState();
+        render();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-drag-cat]').forEach(handle => {
+    handle.addEventListener('dragstart', e => {
+      e.stopPropagation();
+      draggingCat = handle.dataset.dragCat;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'cat:' + draggingCat);
+      const col = handle.closest('.column');
+      if (col) col.classList.add('col-dragging');
+    });
+    handle.addEventListener('dragend', () => {
+      draggingCat = null;
+      document.querySelectorAll('.col-dragging, .cat-drop-before, .cat-drop-after')
+        .forEach(c => c.classList.remove('col-dragging', 'cat-drop-before', 'cat-drop-after'));
+    });
+  });
+
+  document.querySelectorAll('[data-delete]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.delete;
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      if (task.recurrenceId) {
+        showRecurringDeleteModal(task);
+        return;
+      }
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      saveState();
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-save]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      saveEdit(btn.dataset.save);
+    });
+  });
+
+  document.querySelectorAll('[data-cancel]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      editingId = null;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.task-edit input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const editEl = input.closest('[data-edit-id]');
+        if (editEl) saveEdit(editEl.dataset.editId);
+      } else if (e.key === 'Escape') {
+        editingId = null;
+        render();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-add-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addingFor = btn.dataset.addToggle;
+      render();
+      const titleInput = document.querySelector(`.add-task-title[data-add-cat="${CSS.escape(addingFor)}"]`);
+      if (titleInput) titleInput.focus();
+    });
+  });
+
+  document.querySelectorAll('[data-add-cancel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addingFor = null;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-add-submit]').forEach(btn => {
+    btn.addEventListener('click', () => submitAddTask(btn.dataset.addSubmit));
+  });
+
+  document.querySelectorAll('[data-add-recurring], [data-edit-recurring]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      btn.classList.toggle('active');
+    });
+  });
+
+  document.querySelectorAll('[data-prio-select] .prio-opt').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const group = btn.closest('[data-prio-select]');
+      group.querySelectorAll('.prio-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.add-task.expanded input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitAddTask(addingFor);
+      } else if (e.key === 'Escape') {
+        addingFor = null;
+        render();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-rename-cat]').forEach(el => {
+    el.addEventListener('click', () => {
+      editingCategory = el.dataset.renameCat;
+      render();
+      const input = document.querySelector('.rename-input');
+      if (input) { input.focus(); input.select(); }
+    });
+  });
+
+  document.querySelectorAll('.rename-input').forEach(input => {
+    const old = input.dataset.oldCat;
+    const save = () => {
+      if (editingCategory !== old) return;
+      const newName = input.value.trim();
+      editingCategory = null;
+      if (!newName || newName === old) { render(); return; }
+      if (state.categories.some(c => c.name === newName)) {
+        showToast('A category with that name already exists');
+        render();
+        return;
+      }
+      const meta = state.categories.find(c => c.name === old);
+      if (meta) {
+        meta.name = newName;
+        meta.icon = pickIcon(newName);
+      }
+      state.tasks.forEach(t => { if (t.category === old) t.category = newName; });
+      saveState();
+      render();
+    };
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      else if (e.key === 'Escape') { editingCategory = null; render(); }
+    });
+    input.addEventListener('blur', save);
+  });
+
+  document.querySelectorAll('[data-delete-cat]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const cat = btn.dataset.deleteCat;
+      const taskCount = state.tasks.filter(t => t.category === cat).length;
+      const msg = taskCount > 0
+        ? `Delete category "${cat}" and its ${taskCount} task(s)?`
+        : `Delete category "${cat}"?`;
+      if (confirm(msg)) {
+        state.categories = state.categories.filter(c => c.name !== cat);
+        state.tasks = state.tasks.filter(t => t.category !== cat);
+        if (cat === PROTECTED_CATEGORY) state.randomRemoved = true;
+        saveState();
+        render();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-week-jump]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      viewWeekId = btn.dataset.weekJump;
+      render();
+    });
+  });
+}
+
+document.getElementById('prev-week').onclick = () => { viewWeekId = shiftWeek(viewWeekId, -1); render(); };
+document.getElementById('next-week').onclick = () => { viewWeekId = shiftWeek(viewWeekId, 1); render(); };
+document.getElementById('today-btn').onclick = () => { viewWeekId = getISOWeek(new Date()); render(); };
+document.getElementById('undo-btn').onclick = undo;
+document.getElementById('redo-btn').onclick = redo;
+
+document.addEventListener('keydown', e => {
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const meta = e.ctrlKey || e.metaKey;
+  if (!meta) return;
+  if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+});
+
+document.getElementById('export-btn').onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `planner-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+};
+
+document.getElementById('import-btn').onclick = () => document.getElementById('import-file').click();
+document.getElementById('import-file').onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data.tasks) || !Array.isArray(data.categories)) throw new Error('Invalid format');
+      if (!confirm('Replace current data with imported file? This cannot be undone.')) return;
+      state = data;
+      saveState();
+      render();
+      showToast('Data imported');
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+};
+
+const rolledCount = rolloverIfNeeded();
+render();
+if (rolledCount > 0) showToast(`Moved ${rolledCount} unfinished task${rolledCount === 1 ? '' : 's'} to this week`);
+</script>
+</body>
+</html>

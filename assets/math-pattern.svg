@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 360" width="540" height="360">
+  <defs>
+    <style>
+      .s { fill: none; stroke: #2c7be5; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .s-thin { fill: none; stroke: #2c7be5; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.65; }
+      .g { fill: #2c7be5; font-family: 'Cambria Math', 'Times New Roman', Georgia, serif; font-style: italic; }
+    </style>
+  </defs>
+
+  <!-- Sine wave with axis -->
+  <g transform="translate(28, 30)">
+    <path class="s-thin" d="M-4 28 L 90 28"/>
+    <path class="s" d="M0 28 Q 12 0 24 28 T 48 28 T 72 28 T 88 28"/>
+  </g>
+
+  <!-- Sigma -->
+  <text class="g" x="158" y="74" font-size="52">Σ</text>
+
+  <!-- Pi -->
+  <text class="g" x="226" y="74" font-size="48">π</text>
+
+  <!-- Right triangle -->
+  <g transform="translate(286, 22)">
+    <path class="s" d="M0 60 L0 0 L60 60 Z"/>
+    <path class="s-thin" d="M5 55 L5 50 L10 50"/>
+  </g>
+
+  <!-- Integral -->
+  <text class="g" x="378" y="80" font-size="62">∫</text>
+
+  <!-- f(x) -->
+  <text class="g" x="416" y="64" font-size="26">f(x)</text>
+
+  <!-- Coordinate plane with curve -->
+  <g transform="translate(22, 138)">
+    <path class="s-thin" d="M0 52 L70 52 M12 0 L12 60"/>
+    <path class="s-thin" d="M66 49 L70 52 L66 55 M9 4 L12 0 L15 4"/>
+    <path class="s" d="M2 36 Q 18 -2 30 30 T 60 42"/>
+  </g>
+
+  <!-- Square root with expression -->
+  <g transform="translate(122, 158)">
+    <path class="s" d="M0 16 L5 22 L12 0 L80 0"/>
+    <text class="g" x="18" y="22" font-size="24">x² + 1</text>
+  </g>
+
+  <!-- Set notation -->
+  <text class="g" x="232" y="180" font-size="36">{a, b}</text>
+
+  <!-- Quadratic -->
+  <text class="g" x="320" y="178" font-size="22">ax² + bx + c</text>
+
+  <!-- Equilateral triangle with theta -->
+  <g transform="translate(28, 232)">
+    <path class="s" d="M32 0 L0 60 L64 60 Z"/>
+    <text class="g" x="24" y="54" font-size="14">θ</text>
+  </g>
+
+  <!-- Theta -->
+  <text class="g" x="124" y="278" font-size="44">θ</text>
+
+  <!-- Infinity -->
+  <text class="g" x="180" y="278" font-size="44">∞</text>
+
+  <!-- Approximately -->
+  <text class="g" x="252" y="276" font-size="38">≈</text>
+
+  <!-- Bar chart -->
+  <g transform="translate(310, 230)">
+    <path class="s-thin" d="M0 60 L70 60"/>
+    <path class="s" d="M8 60 L8 32 L20 32 L20 60 Z M28 60 L28 12 L40 12 L40 60 Z M48 60 L48 40 L60 40 L60 60 Z"/>
+  </g>
+
+  <!-- Plus -->
+  <g transform="translate(412, 244)">
+    <path class="s" d="M0 16 L36 16 M18 -2 L18 34" stroke-width="2.2"/>
+  </g>
+
+  <!-- Delta -->
+  <text class="g" x="464" y="74" font-size="44">Δ</text>
+
+  <!-- Partial derivative -->
+  <text class="g" x="464" y="180" font-size="38">∂</text>
+
+  <!-- Squared paren -->
+  <text class="g" x="464" y="278" font-size="32">( )²</text>
+</svg>
