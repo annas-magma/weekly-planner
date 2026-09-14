@@ -340,6 +340,7 @@
     border-color: var(--border);
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(74, 144, 226, 0.1);
+    z-index: 5;
   }
 
   .task .status-dot {
@@ -931,6 +932,274 @@
     padding: 12px;
     max-width: 1140px;
   }
+
+  /* ---------- Task notes: hover pop-up + badge ---------- */
+
+  .notes-pop {
+    position: absolute;
+    right: 6px;
+    bottom: 100%;
+    padding-bottom: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 60;
+  }
+
+  .task:hover .notes-pop {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .notes-pop-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 4px 14px rgba(44, 123, 229, 0.18);
+    color: var(--primary-deep);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .notes-pop-btn:hover { background: var(--primary-tint); border-color: var(--primary); }
+  .notes-pop-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .notes-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .notes-badge svg { width: 11px; height: 11px; }
+  .notes-badge:hover { border-color: var(--primary); color: var(--primary-deep); }
+  .notes-badge.all-done { background: #e7f8f1; border-color: #9fe3c8; color: #0b7d5d; }
+  .task.done .notes-badge { opacity: 0.55; }
+
+  /* ---------- Task notes: the paper sheet ---------- */
+
+  .notes-sheet {
+    width: min(580px, 94vw);
+    max-height: 84vh;
+    display: flex;
+    flex-direction: column;
+    background: #fffdf7;
+    border: 1px solid #ece0c6;
+    border-radius: 5px 5px 9px 9px;
+    box-shadow: 0 20px 55px rgba(26, 43, 66, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notes-sheet::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-deep) 100%);
+  }
+
+  .notes-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid #efe6d2;
+  }
+
+  .notes-head-text { flex: 1; min-width: 0; }
+
+  .notes-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+
+  .notes-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 3px;
+    word-break: break-word;
+  }
+
+  .notes-close {
+    font-size: 20px;
+    line-height: 1;
+    padding: 2px 9px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-subtle);
+  }
+
+  .notes-close:hover { background: #f3ead6; color: var(--text); }
+
+  .notes-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 18px 16px;
+    position: relative;
+  }
+
+  .notes-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 44px;
+    width: 1px;
+    background: rgba(244, 63, 94, 0.2);
+  }
+
+  .note-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(180, 160, 120, 0.16);
+    position: relative;
+  }
+
+  .note-line:hover { background: rgba(255, 245, 219, 0.45); }
+
+  .note-marker {
+    width: 22px;
+    min-height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .note-bullet {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .note-check {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .note-line[data-status="todo"] .note-check:hover { border-color: var(--primary); }
+
+  .note-line[data-status="doing"] .note-check {
+    border-color: var(--amber);
+    background: var(--amber);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+  }
+
+  .note-line[data-status="done"] .note-check {
+    border-color: var(--green);
+    background: var(--green);
+  }
+
+  .note-line[data-status="done"] .note-text {
+    text-decoration: line-through;
+    color: var(--text-subtle);
+  }
+
+  .note-text {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    resize: none;
+    overflow: hidden;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text);
+    padding: 2px 0;
+  }
+
+  .note-text::placeholder { color: var(--text-subtle); font-style: italic; }
+
+  .note-del {
+    opacity: 0;
+    flex-shrink: 0;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-subtle);
+    font-size: 15px;
+    line-height: 1;
+    transition: opacity 0.15s;
+  }
+
+  .note-line:hover .note-del { opacity: 1; }
+  .note-del:hover { background: var(--rose-bg); color: var(--rose-text); }
+
+  .notes-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 11px 18px;
+    border-top: 1px solid #efe6d2;
+    background: #fdf8ec;
+  }
+
+  .notes-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .notes-tool:hover {
+    background: var(--primary-tint);
+    border-color: var(--primary);
+    color: var(--primary-deep);
+  }
+
+  .notes-progress {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  .notes-hint {
+    flex-basis: 100%;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-subtle);
+  }
 </style>
 </head>
 <body>
@@ -966,9 +1235,32 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="notes-modal">
+    <div class="notes-sheet" role="dialog" aria-modal="true" aria-labelledby="notes-task-title">
+      <div class="notes-head">
+        <div class="notes-head-text">
+          <div class="notes-kicker" id="notes-kicker"></div>
+          <div class="notes-title" id="notes-task-title"></div>
+        </div>
+        <button class="notes-close" id="notes-close" title="Close (Esc)" aria-label="Close notes">&times;</button>
+      </div>
+      <div class="notes-body">
+        <div id="notes-lines"></div>
+      </div>
+      <div class="notes-foot">
+        <button type="button" class="notes-tool" data-note-tool="text">Note</button>
+        <button type="button" class="notes-tool" data-note-tool="bullet">&bull; Bullet</button>
+        <button type="button" class="notes-tool" data-note-tool="check">&#9744; Checklist</button>
+        <span class="notes-progress" id="notes-progress"></span>
+        <span class="notes-hint">Enter starts a new line &middot; type &ldquo;- &rdquo; for a bullet or &ldquo;[] &rdquo; for a checkbox &middot; click a circle to cycle to&nbsp;do &rarr; doing &rarr; done</span>
+      </div>
+    </div>
+  </div>
+
 <script>
 const STORAGE_KEY = 'weekly-planner-v1';
 const STATUSES = ['todo', 'doing', 'done'];
+const NOTE_TYPES = ['text', 'bullet', 'check'];
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Errands', 'Random'];
 const PROTECTED_CATEGORY = 'Random';
 const MAX_UNDO = 50;
@@ -1000,7 +1292,8 @@ const ICONS = {
   dumbbell: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="6" width="2" height="4" rx="0.5"/><rect x="3.5" y="7" width="2" height="2"/><path d="M5.5 8h5"/><rect x="10.5" y="7" width="2" height="2"/><rect x="12.5" y="6" width="2" height="4" rx="0.5"/></svg>`,
   airplane: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l5-1 4-5 1 1-3 5 4 4-1 1-5-3-2 3-1-3-3-1z"/></svg>`,
   coin: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v6"/><path d="M6 7c0-1 .8-1.5 2-1.5S10 6 10 7c0 .9-.6 1-2 1s-2 .2-2 1c0 1 .8 1.5 2 1.5S10 10 10 9"/></svg>`,
-  repeat: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a5 5 0 0 1 8.5-3.5L13 5"/><path d="M13 2v3h-3"/><path d="M13 9a5 5 0 0 1-8.5 3.5L3 11"/><path d="M3 14v-3h3"/></svg>`
+  repeat: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a5 5 0 0 1 8.5-3.5L13 5"/><path d="M13 2v3h-3"/><path d="M13 9a5 5 0 0 1-8.5 3.5L3 11"/><path d="M3 14v-3h3"/></svg>`,
+  note: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 2.5h6.2L12.5 5.3v8.2a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M9.5 2.5v3h3"/><path d="M5 8.5h5"/><path d="M5 11h3.5"/></svg>`
 };
 
 function pickIcon(name) {
@@ -1058,6 +1351,16 @@ function loadState() {
     parsed.stoppedRecurrences = parsed.stoppedRecurrences || [];
     parsed.skippedRecurrences = parsed.skippedRecurrences || [];
     parsed.randomRemoved = parsed.randomRemoved || false;
+    parsed.tasks.forEach(t => {
+      t.notes = Array.isArray(t.notes)
+        ? t.notes.filter(l => l && typeof l === 'object').map(l => ({
+            id: l.id || uid(),
+            type: NOTE_TYPES.includes(l.type) ? l.type : 'text',
+            text: typeof l.text === 'string' ? l.text : '',
+            status: STATUSES.includes(l.status) ? l.status : 'todo'
+          }))
+        : [];
+    });
     if (!parsed.categories || !parsed.categories.length) {
       parsed.categories = DEFAULT_CATEGORIES.map((n, i) => createCategoryMeta(n, i));
     } else if (typeof parsed.categories[0] === 'string') {
@@ -1396,6 +1699,292 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* ---------------- Task notes ---------------- */
+
+let notesTaskId = null;
+let notesOpenSnapshot = null;
+let notesSaveTimer = null;
+let lastNoteLineId = null;
+
+function blankLine(type) {
+  return { id: uid(), type: NOTE_TYPES.includes(type) ? type : 'text', text: '', status: 'todo' };
+}
+
+function getNotes(task) {
+  if (!Array.isArray(task.notes)) task.notes = [];
+  return task.notes;
+}
+
+function noteStats(task) {
+  const lines = Array.isArray(task.notes) ? task.notes : [];
+  const checks = lines.filter(l => l.type === 'check');
+  return {
+    hasText: lines.some(l => (l.text || '').trim()),
+    checks: checks.length,
+    checksDone: checks.filter(l => l.status === 'done').length
+  };
+}
+
+function currentNotesTask() {
+  return notesTaskId ? state.tasks.find(t => t.id === notesTaskId) : null;
+}
+
+function findNoteLine(lineId) {
+  const task = currentNotesTask();
+  if (!task) return null;
+  return getNotes(task).find(l => l.id === lineId) || null;
+}
+
+function noteRowById(lineId) {
+  const listEl = document.getElementById('notes-lines');
+  return listEl ? listEl.querySelector(`[data-line-id="${CSS.escape(lineId)}"]`) : null;
+}
+
+function markNotesChanged() {
+  if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+  saveStateNoUndo();
+}
+
+function scheduleNotesSave() {
+  if (notesSaveTimer) clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(() => { notesSaveTimer = null; saveStateNoUndo(); }, 400);
+}
+
+function autoGrowNote(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = Math.max(20, ta.scrollHeight) + 'px';
+}
+
+function focusNoteText(row, atEnd) {
+  if (!row) return;
+  const ta = row.querySelector('.note-text');
+  if (!ta) return;
+  ta.focus();
+  const pos = atEnd ? ta.value.length : 0;
+  ta.setSelectionRange(pos, pos);
+}
+
+function notePlaceholder(type) {
+  if (type === 'check') return 'Checklist item…';
+  if (type === 'bullet') return 'Bullet point…';
+  return 'Write a note…';
+}
+
+function buildNoteRow(line) {
+  const row = document.createElement('div');
+  row.className = 'note-line';
+  row.dataset.lineId = line.id;
+  row.dataset.type = line.type;
+  row.dataset.status = line.status || 'todo';
+
+  const marker = document.createElement('div');
+  marker.className = 'note-marker';
+  if (line.type === 'bullet') {
+    marker.innerHTML = '<span class="note-bullet"></span>';
+  } else if (line.type === 'check') {
+    marker.innerHTML = '<button type="button" class="note-check" title="Cycle: to do → doing → done"></button>';
+  }
+  row.appendChild(marker);
+
+  const ta = document.createElement('textarea');
+  ta.className = 'note-text';
+  ta.rows = 1;
+  ta.value = line.text || '';
+  ta.placeholder = notePlaceholder(line.type);
+  row.appendChild(ta);
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'note-del';
+  del.title = 'Delete this line';
+  del.textContent = '×';
+  row.appendChild(del);
+
+  ta.addEventListener('focus', () => { lastNoteLineId = line.id; });
+
+  ta.addEventListener('input', () => {
+    const l = findNoteLine(row.dataset.lineId);
+    if (!l) return;
+    let value = ta.value;
+    let newType = null;
+    if (l.type === 'text' && /^[-*]\s/.test(value)) {
+      value = value.replace(/^[-*]\s/, '');
+      newType = 'bullet';
+    } else if (l.type !== 'check' && /^\[\s?\]\s/.test(value)) {
+      value = value.replace(/^\[\s?\]\s/, '');
+      newType = 'check';
+    }
+    l.text = value;
+    if (newType) { setNoteType(row, newType); return; }
+    if (ta.value !== value) ta.value = value;
+    autoGrowNote(ta);
+    scheduleNotesSave();
+  });
+
+  ta.addEventListener('keydown', e => {
+    const l = findNoteLine(row.dataset.lineId);
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      addNoteRowAfter(row, l ? l.type : 'text');
+    } else if (e.key === 'Backspace' && ta.value === '' && ta.selectionStart === 0) {
+      e.preventDefault();
+      if (l && l.type !== 'text') setNoteType(row, 'text');
+      else removeNoteRow(row, true);
+    } else if (e.key === 'ArrowUp' && ta.selectionStart === 0) {
+      if (row.previousElementSibling) { e.preventDefault(); focusNoteText(row.previousElementSibling, true); }
+    } else if (e.key === 'ArrowDown' && ta.selectionStart === ta.value.length) {
+      if (row.nextElementSibling) { e.preventDefault(); focusNoteText(row.nextElementSibling, false); }
+    }
+  });
+
+  del.addEventListener('click', () => removeNoteRow(row, true));
+
+  const chk = marker.querySelector('.note-check');
+  if (chk) chk.addEventListener('click', e => cycleNoteStatus(row, e.currentTarget));
+
+  requestAnimationFrame(() => autoGrowNote(ta));
+  return row;
+}
+
+function addNoteRowAfter(row, type) {
+  const task = currentNotesTask();
+  if (!task) return;
+  const lines = getNotes(task);
+  const idx = lines.findIndex(l => l.id === row.dataset.lineId);
+  const line = blankLine(type);
+  lines.splice(idx === -1 ? lines.length : idx + 1, 0, line);
+  const newRow = buildNoteRow(line);
+  row.after(newRow);
+  focusNoteText(newRow, false);
+  markNotesChanged();
+  updateNotesProgress();
+}
+
+function removeNoteRow(row, focusNeighbour) {
+  const task = currentNotesTask();
+  if (!task) return;
+  const lines = getNotes(task);
+  const idx = lines.findIndex(l => l.id === row.dataset.lineId);
+  if (idx === -1) return;
+
+  if (lines.length === 1) {
+    const only = lines[0];
+    only.text = '';
+    only.type = 'text';
+    only.status = 'todo';
+    const fresh = buildNoteRow(only);
+    row.replaceWith(fresh);
+    focusNoteText(fresh, false);
+  } else {
+    const neighbour = row.previousElementSibling || row.nextElementSibling;
+    lines.splice(idx, 1);
+    row.remove();
+    if (focusNeighbour) focusNoteText(neighbour, true);
+  }
+  markNotesChanged();
+  updateNotesProgress();
+}
+
+function setNoteType(row, type) {
+  const line = findNoteLine(row.dataset.lineId);
+  if (!line || line.type === type) return;
+  const oldTa = row.querySelector('.note-text');
+  const caret = oldTa ? oldTa.selectionStart : 0;
+  line.type = type;
+  if (type !== 'check') line.status = 'todo';
+  const fresh = buildNoteRow(line);
+  row.replaceWith(fresh);
+  const ta = fresh.querySelector('.note-text');
+  ta.focus();
+  const pos = Math.min(caret, ta.value.length);
+  ta.setSelectionRange(pos, pos);
+  markNotesChanged();
+  updateNotesProgress();
+}
+
+function cycleNoteStatus(row, dotEl) {
+  const task = currentNotesTask();
+  const line = findNoteLine(row.dataset.lineId);
+  if (!task || !line) return;
+  const idx = STATUSES.indexOf(line.status || 'todo');
+  line.status = STATUSES[(idx + 1) % STATUSES.length];
+  row.dataset.status = line.status;
+  if (line.status === 'done' && dotEl) {
+    const r = dotEl.getBoundingClientRect();
+    const meta = state.categories.find(c => c.name === task.category);
+    const color = getColor(meta);
+    confetti(r.left + r.width / 2, r.top + r.height / 2, {
+      count: 10,
+      colors: [color.primary, color.deep, '#10b981', '#f59e0b']
+    });
+  }
+  markNotesChanged();
+  updateNotesProgress();
+}
+
+function applyNoteTool(type) {
+  const listEl = document.getElementById('notes-lines');
+  if (!listEl) return;
+  let row = lastNoteLineId ? noteRowById(lastNoteLineId) : null;
+  if (!row) row = listEl.lastElementChild;
+  if (!row) return;
+  const line = findNoteLine(row.dataset.lineId);
+  if (line && (line.text || '').trim()) addNoteRowAfter(row, type);
+  else setNoteType(row, type);
+}
+
+function updateNotesProgress() {
+  const task = currentNotesTask();
+  const el = document.getElementById('notes-progress');
+  if (!task || !el) return;
+  const st = noteStats(task);
+  el.textContent = st.checks ? `${st.checksDone}/${st.checks} ticked off` : '';
+}
+
+function openNotes(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  notesTaskId = id;
+  notesOpenSnapshot = JSON.stringify(state);
+  lastNoteLineId = null;
+
+  const lines = getNotes(task);
+  if (!lines.length) lines.push(blankLine('text'));
+
+  document.getElementById('notes-kicker').textContent = `${task.category} · ${formatWeek(task.weekId)}`;
+  document.getElementById('notes-task-title').textContent = task.title;
+
+  const listEl = document.getElementById('notes-lines');
+  listEl.innerHTML = '';
+  lines.forEach(line => listEl.appendChild(buildNoteRow(line)));
+
+  updateNotesProgress();
+  document.getElementById('notes-modal').classList.add('show');
+  focusNoteText(listEl.lastElementChild, true);
+}
+
+function closeNotes() {
+  if (!notesTaskId) return;
+  if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+
+  const task = currentNotesTask();
+  if (task) task.notes = getNotes(task).filter(l => (l.text || '').trim());
+
+  document.getElementById('notes-modal').classList.remove('show');
+  notesTaskId = null;
+  lastNoteLineId = null;
+
+  const snap = JSON.stringify(state);
+  if (snap !== notesOpenSnapshot) {
+    lastSavedSnapshot = notesOpenSnapshot;
+    saveState();
+  } else {
+    saveStateNoUndo();
+  }
+  notesOpenSnapshot = null;
+  render();
+}
+
 function renderTask(t) {
   if (t.id === editingId) {
     const isRec = t.recurrence === 'weekly';
@@ -1427,14 +2016,20 @@ function renderTask(t) {
     ? `<span class="recurring-badge" title="Repeats weekly">${ICONS.repeat}</span>`
     : '';
   const prioCls = t.priority === 'high' ? ' prio-high' : t.priority === 'med' ? ' prio-med' : ' prio-low';
+  const st = noteStats(t);
+  const noteBadge = (st.hasText || st.checks)
+    ? `<span class="notes-badge${st.checks && st.checksDone === st.checks ? ' all-done' : ''}" data-open-notes="${t.id}" title="Open notes">${ICONS.note}${st.checks ? `${st.checksDone}/${st.checks}` : ''}</span>`
+    : '';
   return `
     <div class="task ${t.status}${t.rolledOver ? ' rollover' : ''}${prioCls}" data-id="${t.id}" draggable="true">
       <span class="drag-handle" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="6" cy="4" r="1.1"/><circle cx="6" cy="8" r="1.1"/><circle cx="6" cy="12" r="1.1"/><circle cx="10" cy="4" r="1.1"/><circle cx="10" cy="8" r="1.1"/><circle cx="10" cy="12" r="1.1"/></svg></span>
       <div class="status-dot" data-toggle-status="${t.id}" title="Cycle status"></div>
       <div class="task-title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
       ${recBadge}
+      ${noteBadge}
       ${pill}
       <button class="icon-btn task-delete" data-delete="${t.id}" title="Delete">×</button>
+      <span class="notes-pop"><button type="button" class="notes-pop-btn" data-open-notes="${t.id}">${ICONS.note}Open notes</button></span>
     </div>
   `;
 }
@@ -1641,6 +2236,11 @@ function bindHandlers() {
     el.addEventListener('click', e => {
       if (e.target.closest('[data-delete]')) return;
       if (e.target.closest('.drag-handle')) return;
+      if (e.target.closest('[data-open-notes]')) {
+        e.stopPropagation();
+        openNotes(el.dataset.id);
+        return;
+      }
       const id = el.dataset.id;
       const task = state.tasks.find(t => t.id === id);
       if (!task) return;
@@ -1907,7 +2507,17 @@ document.getElementById('today-btn').onclick = () => { viewWeekId = getISOWeek(n
 document.getElementById('undo-btn').onclick = undo;
 document.getElementById('redo-btn').onclick = redo;
 
+document.getElementById('notes-close').onclick = closeNotes;
+document.getElementById('notes-modal').addEventListener('click', e => {
+  if (e.target.id === 'notes-modal') closeNotes();
+});
+document.querySelectorAll('[data-note-tool]').forEach(btn => {
+  btn.addEventListener('mousedown', e => e.preventDefault());
+  btn.addEventListener('click', () => applyNoteTool(btn.dataset.noteTool));
+});
+
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && notesTaskId) { e.preventDefault(); closeNotes(); return; }
   const tag = (document.activeElement && document.activeElement.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   const meta = e.ctrlKey || e.metaKey;
