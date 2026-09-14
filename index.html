@@ -2603,7 +2603,10 @@ function openIntentionsModal() {
         hours: t.hours,
         colorIndex: typeof t.colorIndex === 'number' ? t.colorIndex : colorIndexForLabel(t.label)
       }))
-    : hoursForWeek(viewWeekId).map(s => ({ label: s.label, hours: s.hours, colorIndex: s.colorIndex }));
+    // no plan yet: borrow this week's labels so they need not be retyped, but
+    // start every one at 0 - the intention is stated from scratch, not anchored
+    // on whatever one week happened to look like
+    : hoursForWeek(viewWeekId).map(s => ({ label: s.label, hours: 0, colorIndex: s.colorIndex }));
   if (!intentDraft.length) intentDraft = [{ label: '', hours: 0, colorIndex: 0 }];
   document.getElementById('intent-week-hours').value = weekTarget();
   renderIntentDraft();
