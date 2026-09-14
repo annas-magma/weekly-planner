@@ -147,20 +147,6 @@
   button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; background: var(--surface-hover); color: var(--primary-deep); }
   button:disabled:hover { background: var(--surface-hover); color: var(--primary-deep); }
 
-  .summary {
-    display: flex;
-    gap: 18px;
-    padding: 8px 18px;
-    background: var(--surface);
-    border-radius: 10px;
-    font-size: 14px;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid var(--border-soft);
-  }
-
-  .summary span { color: var(--text-muted); }
-  .summary b { color: var(--primary-deep); font-weight: 700; }
-
   .spacer { flex: 1; }
 
   .columns {
@@ -644,135 +630,6 @@
     box-shadow: var(--shadow-hover);
   }
 
-  .stats-bar {
-    display: flex;
-    align-items: stretch;
-    gap: 14px;
-    flex: 1;
-    min-width: 0;
-    margin: 0;
-    flex-wrap: wrap;
-  }
-
-  .overall-progress {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: var(--surface);
-    border-radius: 12px;
-    border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow-soft);
-  }
-
-  .overall-ring {
-    width: 52px;
-    height: 52px;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  .overall-ring svg {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-  }
-
-  .overall-ring .ring-bg { fill: none; stroke: var(--primary-tint); stroke-width: 3.2; }
-  .overall-ring .ring-fg {
-    fill: none;
-    stroke: var(--primary-deep);
-    stroke-width: 3.2;
-    stroke-linecap: round;
-    transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .overall-ring-label {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--primary-deep);
-  }
-
-  .stats-text { display: flex; flex-direction: column; gap: 2px; }
-  .stats-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-  }
-  .stats-value { font-size: 14px; color: var(--text); font-weight: 600; }
-  .stats-value b { color: var(--primary-deep); font-weight: 700; }
-
-  .week-strip {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-    background: var(--surface);
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--border-soft);
-    box-shadow: var(--shadow-soft);
-  }
-
-  .week-strip-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: transparent;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    height: 50px;
-    justify-content: flex-end;
-    color: inherit;
-    font-family: inherit;
-  }
-  .week-strip-item:hover { background: transparent; }
-
-  .week-strip-bar-wrap {
-    height: 34px;
-    display: flex;
-    align-items: flex-end;
-    width: 16px;
-  }
-
-  .week-strip-bar {
-    width: 100%;
-    min-height: 4px;
-    background: linear-gradient(180deg, var(--primary), var(--primary-deep));
-    border-radius: 3px 3px 0 0;
-    transition: height 0.3s, background 0.2s;
-  }
-
-  .week-strip-item.empty .week-strip-bar {
-    background: var(--border);
-  }
-
-  .week-strip-item.current .week-strip-bar {
-    background: linear-gradient(180deg, var(--primary-deep), var(--primary-darker));
-    box-shadow: 0 0 0 2px var(--primary-tint);
-  }
-
-  .week-strip-item:hover .week-strip-bar {
-    filter: brightness(1.05);
-    transform: translateY(-1px);
-  }
-
-  .week-strip-label {
-    font-size: 10px;
-    color: var(--text-muted);
-    font-weight: 600;
-    letter-spacing: 0.3px;
-  }
-
-  .week-strip-item.current .week-strip-label { color: var(--primary-deep); }
 
   .recurring-toggle {
     display: inline-flex;
@@ -1208,21 +1065,157 @@
 
   .header-row2 {
     flex-basis: 100%;
-    display: flex;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
-    flex-wrap: wrap;
+    align-items: stretch;
   }
 
-  .hours-card {
-    margin-left: auto;
-    width: 312px;
+  .panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
     padding: 12px 14px 13px;
     background: var(--surface);
     border: 1px solid var(--border-soft);
     border-radius: 12px;
     box-shadow: var(--shadow-soft);
   }
+
+  .panel-heading {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  @media (max-width: 980px) {
+    .header-row2 { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Panel 1: progress ---------- */
+
+  .overall-progress {
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .big-ring {
+    width: 124px;
+    height: 124px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .big-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .big-ring .ring-bg { fill: none; stroke: var(--primary-tint); stroke-width: 3.4; }
+
+  .big-ring .ring-doing {
+    fill: none;
+    stroke: var(--amber);
+    stroke-width: 3.4;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .big-ring .ring-done {
+    fill: none;
+    stroke: var(--primary-deep);
+    stroke-width: 3.4;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .big-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+  }
+
+  .big-ring-pct { font-size: 30px; font-weight: 700; color: var(--primary-deep); line-height: 1; }
+  .big-ring-sub { font-size: 11px; font-weight: 600; color: var(--text-subtle); }
+
+  .progress-key {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .progress-key span { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); }
+  .progress-key b { font-weight: 700; }
+  .progress-key .key-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .progress-key .key-done b { color: var(--primary-deep); }
+  .progress-key .key-doing b { color: var(--amber-text); }
+
+  /* ---------- Panel 2: categories ---------- */
+
+  .cat-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    flex: 1;
+    max-height: 148px;
+    overflow-y: auto;
+  }
+
+  .cat-row { display: flex; flex-direction: column; gap: 4px; }
+
+  .cat-row-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .cat-row-icon { width: 13px; height: 13px; flex-shrink: 0; color: var(--cat); }
+  .cat-row-icon svg { width: 13px; height: 13px; }
+
+  .cat-row-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .cat-row-count { font-weight: 700; color: var(--text-muted); flex-shrink: 0; }
+  .cat-row.complete .cat-row-count { color: var(--green); }
+  .cat-row.empty .cat-row-name, .cat-row.empty .cat-row-count { color: var(--text-subtle); }
+
+  .cat-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--surface-hover);
+    overflow: hidden;
+    display: flex;
+  }
+
+  .cat-bar-done { background: var(--cat); transition: width 0.4s; }
+  .cat-bar-doing { background: var(--amber); opacity: 0.75; transition: width 0.4s; }
+
+  .cat-foot {
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .cat-foot b { color: var(--primary-deep); font-weight: 700; }
+
+  /* ---------- Panel 3: time ---------- */
 
   .hours-head {
     display: flex;
@@ -1366,9 +1359,6 @@
 
   .hours-plan-btn { color: var(--text-muted); }
 
-  @media (max-width: 700px) {
-    .hours-card { width: 100%; margin-left: 0; }
-  }
 
   /* ---------- Time dialogs ---------- */
 
@@ -1562,7 +1552,7 @@
     position: fixed;
     z-index: 2000;
     display: grid;
-    grid-template-columns: repeat(4, 22px);
+    grid-template-columns: repeat(3, 24px);
     gap: 6px;
     padding: 9px;
     background: var(--surface);
@@ -1572,8 +1562,8 @@
   }
 
   .color-swatch {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border-radius: 6px;
     border: 2px solid transparent;
@@ -1593,7 +1583,6 @@
       <button id="next-week" title="Next week">▶</button>
     </div>
     <button id="today-btn">Today</button>
-    <div class="summary" id="summary"></div>
     <div class="spacer"></div>
     <button id="undo-btn" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
     <button id="redo-btn" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
@@ -1602,8 +1591,13 @@
     <input type="file" id="import-file" accept=".json" style="display:none">
     <div class="header-break"></div>
     <div class="header-row2">
-    <div class="stats-bar" id="stats-bar"></div>
-    <div class="hours-card">
+    <div class="panel overall-progress" id="overall-progress"></div>
+    <div class="panel category-overview">
+      <div class="panel-heading">Categories</div>
+      <div class="cat-rows" id="cat-rows"></div>
+      <div class="cat-foot" id="cat-foot"></div>
+    </div>
+    <div class="panel hours-card">
       <div class="hours-head">
         <span class="hours-heading" id="hours-heading">Time this week</span>
         <div class="hours-tabs">
@@ -1626,7 +1620,7 @@
     </div>
   </header>
   <div class="columns" id="columns"></div>
-  <div class="legend">Click the dot to cycle status (todo → working on → done). Click a task to edit it (set High/Med/Low priority there — a red, amber, or blue left stripe marks High/Med/Low and higher-priority tasks rise to the top of each category), or a category name to rename. Drag tasks between categories, or drag the grip in a category header to reorder categories. Recurring tasks repeat each week with a fresh todo — uncheck "Repeats weekly" or use the delete dialog to stop. Random stays by default (even when empty) but can be deleted like any category; other empty categories drop off when the week rolls over. Hover a task for "Open notes" — a sheet for notes, bullets and a checklist whose circles cycle the same todo → working on → done. Top right, the pie splits your 40-hour week: "Add hours" logs time against a label, grey is whatever is still unallocated, and hours reset each week. "Set intentions" fixes the split you are aiming for — that carries over week to week, and the Plan tab shows it on its own. Ctrl+Z / Ctrl+Y to undo / redo.</div>
+  <div class="legend">Click the dot to cycle status (todo → working on → done). Click a task to edit it (set High/Med/Low priority there — a red, amber, or blue left stripe marks High/Med/Low and higher-priority tasks rise to the top of each category), or a category name to rename. Drag tasks between categories, or drag the grip in a category header to reorder categories. Recurring tasks repeat each week with a fresh todo — uncheck "Repeats weekly" or use the delete dialog to stop. Random stays by default (even when empty) but can be deleted like any category; other empty categories drop off when the week rolls over. Hover a task for "Open notes" — a sheet for notes, bullets and a checklist whose circles cycle the same todo → working on → done. Top right, the pie splits your 40-hour week: "Add hours" logs time against a label, grey is whatever is still unallocated, and hours reset each week. "Set intentions" fixes the split you are aiming for — that carries over week to week, and the Plan tab shows it on its own. The ring counts done in blue and working-on in orange; beside it the category overview tracks each list. Ctrl+Z / Ctrl+Y to undo / redo.</div>
   <div class="toast" id="toast"></div>
   <div class="modal-overlay" id="recurring-delete-modal">
     <div class="modal">
@@ -1718,6 +1712,17 @@ const STATUSES = ['todo', 'doing', 'done'];
 const NOTE_TYPES = ['text', 'bullet', 'check'];
 const DEFAULT_WEEK_HOURS = 40;
 const UNALLOCATED_COLOR = '#d9e2ec';
+
+/* Slice colours for the time pie - deliberately its own light palette,
+   separate from the category colours. */
+const HOUR_PALETTE = [
+  { name: 'Light blue',   color: '#9ac7ee' },
+  { name: 'Light red',    color: '#f3a7a7' },
+  { name: 'Light green',  color: '#9fd9b4' },
+  { name: 'Light purple', color: '#c0b1e8' },
+  { name: 'Light yellow', color: '#f2dc96' },
+  { name: 'Light orange', color: '#f7bf92' }
+];
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Errands', 'Random'];
 const PROTECTED_CATEGORY = 'Random';
 const MAX_UNDO = 50;
@@ -2036,17 +2041,6 @@ function confetti(x, y, opts = {}) {
   }
 }
 
-function getRecentWeeks(count) {
-  const current = getISOWeek(new Date());
-  const out = [];
-  for (let i = count - 1; i >= 0; i--) {
-    const wid = i === 0 ? current : shiftWeek(current, -i);
-    const tasks = state.tasks.filter(t => t.weekId === wid);
-    const done = tasks.filter(t => t.status === 'done').length;
-    out.push({ wid, total: tasks.length, done, isCurrent: wid === current });
-  }
-  return out;
-}
 
 function skipKey(recurrenceId, weekId) {
   return `${recurrenceId}|${weekId}`;
@@ -2226,7 +2220,8 @@ function sumHours(list) {
 }
 
 function colorForIndex(i) {
-  return PALETTE[((i % PALETTE.length) + PALETTE.length) % PALETTE.length].primary;
+  const n = HOUR_PALETTE.length;
+  return HOUR_PALETTE[(((Number(i) || 0) % n) + n) % n].color;
 }
 
 function colorIndexForLabel(label) {
@@ -2272,8 +2267,8 @@ function openColorPicker(anchorEl, currentIndex, onPick) {
   const pop = document.createElement('div');
   pop.className = 'color-pop';
   pop.id = 'color-pop';
-  pop.innerHTML = PALETTE.map((p, i) =>
-    `<button type="button" class="color-swatch${i === currentIndex ? ' active' : ''}" data-color-index="${i}" style="background:${p.primary}"></button>`
+  pop.innerHTML = HOUR_PALETTE.map((p, i) =>
+    `<button type="button" class="color-swatch${i === currentIndex ? ' active' : ''}" data-color-index="${i}" style="background:${p.color}" title="${p.name}"></button>`
   ).join('');
   document.body.appendChild(pop);
 
@@ -3039,37 +3034,78 @@ function submitAddTask(cat) {
   if (nextInput) nextInput.focus();
 }
 
-function renderStatsBar(done, total) {
-  const el = document.getElementById('stats-bar');
+function renderProgressPanel(done, doing, total) {
+  const el = document.getElementById('overall-progress');
   if (!el) return;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-  const weeks = getRecentWeeks(5);
+  const donePct = total ? (done / total) * 100 : 0;
+  const doingPct = total ? (doing / total) * 100 : 0;
+  const shown = Math.round(donePct);
+  // the orange arc runs done -> done+doing, so it is drawn first and the
+  // blue done arc is laid over its start
+  const combined = Math.min(100, donePct + doingPct);
   el.innerHTML = `
-    <div class="overall-progress">
-      <div class="overall-ring">
-        <svg viewBox="0 0 36 36">
-          <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
-          <circle class="ring-fg" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="${pct} 100"/>
-        </svg>
-        <div class="overall-ring-label">${pct}%</div>
-      </div>
-      <div class="stats-text">
-        <div class="stats-label">This week</div>
-        <div class="stats-value">${done} of ${total} done</div>
+    <div class="panel-heading">Done this week</div>
+    <div class="big-ring">
+      <svg viewBox="0 0 36 36">
+        <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+        <circle class="ring-doing" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="${combined.toFixed(1)} 100"/>
+        <circle class="ring-done" cx="18" cy="18" r="15.9" pathLength="100" stroke-dasharray="${donePct.toFixed(1)} 100"/>
+      </svg>
+      <div class="big-ring-label">
+        <div class="big-ring-pct">${shown}%</div>
+        <div class="big-ring-sub">${done} of ${total}</div>
       </div>
     </div>
-    <div class="week-strip">
-      ${weeks.map(w => {
-        const wpct = w.total ? (w.done / w.total) : 0;
-        const h = 4 + Math.round(wpct * 30);
-        const wn = w.wid.split('-W')[1];
-        return `<button class="week-strip-item${w.isCurrent ? ' current' : ''}${w.total === 0 ? ' empty' : ''}" data-week-jump="${w.wid}" title="Week ${wn}: ${w.done}/${w.total} done">
-          <div class="week-strip-bar-wrap"><div class="week-strip-bar" style="height: ${h}px"></div></div>
-          <span class="week-strip-label">W${wn}</span>
-        </button>`;
-      }).join('')}
+    <div class="progress-key">
+      <span class="key-done"><span class="key-dot" style="background:var(--primary-deep)"></span>Done <b>${done}</b></span>
+      <span class="key-doing"><span class="key-dot" style="background:var(--amber)"></span>Working on <b>${doing}</b></span>
     </div>
   `;
+}
+
+function renderCategoryPanel(tasksThisWeek) {
+  const rowsEl = document.getElementById('cat-rows');
+  const footEl = document.getElementById('cat-foot');
+  if (!rowsEl) return;
+
+  const rows = state.categories.map(cat => {
+    const tasks = tasksThisWeek.filter(t => t.category === cat.name);
+    return {
+      name: cat.name,
+      icon: cat.icon,
+      color: getColor(cat).primary,
+      total: tasks.length,
+      done: tasks.filter(t => t.status === 'done').length,
+      doing: tasks.filter(t => t.status === 'doing').length
+    };
+  });
+
+  rowsEl.innerHTML = rows.length
+    ? rows.map(r => {
+        const donePct = r.total ? (r.done / r.total) * 100 : 0;
+        const doingPct = r.total ? (r.doing / r.total) * 100 : 0;
+        const cls = ['cat-row', !r.total ? 'empty' : '', r.total && r.done === r.total ? 'complete' : '']
+          .filter(Boolean).join(' ');
+        return `
+          <div class="${cls}" style="--cat:${r.color}">
+            <div class="cat-row-top">
+              <span class="cat-row-icon">${ICONS[r.icon] || ICONS.sparkle}</span>
+              <span class="cat-row-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</span>
+              <span class="cat-row-count">${r.done}/${r.total}</span>
+            </div>
+            <div class="cat-bar" title="${r.done} done, ${r.doing} working on, of ${r.total}">
+              <div class="cat-bar-done" style="width:${donePct.toFixed(1)}%"></div>
+              <div class="cat-bar-doing" style="width:${doingPct.toFixed(1)}%"></div>
+            </div>
+          </div>`;
+      }).join('')
+    : '<div class="cat-row empty"><div class="cat-row-top"><span class="cat-row-name">No categories yet</span></div></div>';
+
+  const active = rows.filter(r => r.total > 0).length;
+  const cleared = rows.filter(r => r.total > 0 && r.done === r.total).length;
+  footEl.innerHTML = active
+    ? `<b>${cleared}</b> of ${active} ${active === 1 ? 'category' : 'categories'} cleared`
+    : 'Nothing scheduled this week';
 }
 
 function render() {
@@ -3086,10 +3122,8 @@ function render() {
   const total = tasksThisWeek.length;
   const done = tasksThisWeek.filter(t => t.status === 'done').length;
   const doing = tasksThisWeek.filter(t => t.status === 'doing').length;
-  document.getElementById('summary').innerHTML =
-    `<span>Done <b>${done}</b>/${total}</span><span>Working on <b>${doing}</b></span>`;
-
-  renderStatsBar(done, total);
+  renderProgressPanel(done, doing, total);
+  renderCategoryPanel(tasksThisWeek);
   renderHours();
 
   const columnsEl = document.getElementById('columns');
@@ -3434,14 +3468,6 @@ function bindHandlers() {
       }
     });
   });
-
-  document.querySelectorAll('[data-week-jump]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      viewWeekId = btn.dataset.weekJump;
-      render();
-    });
-  });
 }
 
 document.getElementById('prev-week').onclick = () => { viewWeekId = shiftWeek(viewWeekId, -1); render(); };
@@ -3486,8 +3512,8 @@ document.getElementById('intentions-modal').addEventListener('click', e => {
 
 function nextDraftColorIndex() {
   const used = new Set((intentDraft || []).map(r => r.colorIndex));
-  for (let i = 0; i < PALETTE.length; i++) if (!used.has(i)) return i;
-  return used.size % PALETTE.length;
+  for (let i = 0; i < HOUR_PALETTE.length; i++) if (!used.has(i)) return i;
+  return used.size % HOUR_PALETTE.length;
 }
 
 document.getElementById('notes-close').onclick = closeNotes;
