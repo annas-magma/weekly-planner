@@ -648,8 +648,9 @@
     display: flex;
     align-items: stretch;
     gap: 14px;
-    max-width: 1140px;
-    margin: 0 auto 22px;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
     flex-wrap: wrap;
   }
 
@@ -1205,6 +1206,14 @@
 
   .header-break { flex-basis: 100%; height: 0; }
 
+  .header-row2 {
+    flex-basis: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
   .hours-card {
     margin-left: auto;
     width: 312px;
@@ -1502,6 +1511,77 @@
 
   .intent-summary b { color: var(--primary-deep); }
   .intent-summary.over b { color: var(--rose-text); }
+
+  .intent-week {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 11px;
+    margin-bottom: 14px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+  }
+
+  .intent-week label {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .intent-week input {
+    width: 76px;
+    padding: 6px 9px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface);
+    text-align: right;
+  }
+
+  .intent-week input:focus { outline: none; border-color: var(--primary); }
+  .intent-week .intent-week-unit { font-size: 12px; color: var(--text-subtle); }
+
+  /* ---------- Slice colour picker ---------- */
+
+  button.hours-swatch, button.intent-dot {
+    padding: 0;
+    border: 1px solid rgba(26, 43, 66, 0.12);
+    cursor: pointer;
+  }
+
+  button.hours-swatch:hover, button.intent-dot:hover {
+    box-shadow: 0 0 0 2px var(--primary-tint), 0 0 0 3px var(--primary);
+  }
+
+  .color-pop {
+    position: fixed;
+    z-index: 2000;
+    display: grid;
+    grid-template-columns: repeat(4, 22px);
+    gap: 6px;
+    padding: 9px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(26, 43, 66, 0.22);
+  }
+
+  .color-swatch {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .color-swatch:hover { transform: scale(1.12); }
+  .color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface) inset; }
 </style>
 </head>
 <body>
@@ -1521,6 +1601,8 @@
     <button id="import-btn" title="Restore from a JSON backup">Import</button>
     <input type="file" id="import-file" accept=".json" style="display:none">
     <div class="header-break"></div>
+    <div class="header-row2">
+    <div class="stats-bar" id="stats-bar"></div>
     <div class="hours-card">
       <div class="hours-head">
         <span class="hours-heading" id="hours-heading">Time this week</span>
@@ -1541,8 +1623,8 @@
         <button type="button" id="set-intentions-btn" class="hours-plan-btn">Set intentions</button>
       </div>
     </div>
+    </div>
   </header>
-  <div class="stats-bar" id="stats-bar"></div>
   <div class="columns" id="columns"></div>
   <div class="legend">Click the dot to cycle status (todo → working on → done). Click a task to edit it (set High/Med/Low priority there — a red, amber, or blue left stripe marks High/Med/Low and higher-priority tasks rise to the top of each category), or a category name to rename. Drag tasks between categories, or drag the grip in a category header to reorder categories. Recurring tasks repeat each week with a fresh todo — uncheck "Repeats weekly" or use the delete dialog to stop. Random stays by default (even when empty) but can be deleted like any category; other empty categories drop off when the week rolls over. Hover a task for "Open notes" — a sheet for notes, bullets and a checklist whose circles cycle the same todo → working on → done. Top right, the pie splits your 40-hour week: "Add hours" logs time against a label, grey is whatever is still unallocated, and hours reset each week. "Set intentions" fixes the split you are aiming for — that carries over week to week, and the Plan tab shows it on its own. Ctrl+Z / Ctrl+Y to undo / redo.</div>
   <div class="toast" id="toast"></div>
@@ -1592,7 +1674,12 @@
   <div class="modal-overlay" id="intentions-modal">
     <div class="modal">
       <div class="modal-title">Set intentions</div>
-      <div class="modal-body">How you mean to split a 40-hour week. This carries over to every week until you change it.</div>
+      <div class="modal-body">How you mean to split your week. This carries over to every week until you change it.</div>
+      <div class="intent-week">
+        <label for="intent-week-hours">A full week is</label>
+        <input type="number" id="intent-week-hours" min="1" max="168" step="0.5">
+        <span class="intent-week-unit">hours</span>
+      </div>
       <div class="intent-rows" id="intent-rows"></div>
       <button type="button" class="intent-add" id="intent-add">+ Add a slice</button>
       <div class="intent-summary" id="intent-summary"></div>
@@ -1629,7 +1716,7 @@
 const STORAGE_KEY = 'weekly-planner-v1';
 const STATUSES = ['todo', 'doing', 'done'];
 const NOTE_TYPES = ['text', 'bullet', 'check'];
-const WEEK_TARGET_HOURS = 40;
+const DEFAULT_WEEK_HOURS = 40;
 const UNALLOCATED_COLOR = '#d9e2ec';
 const DEFAULT_CATEGORIES = ['Work', 'Personal', 'Errands', 'Random'];
 const PROTECTED_CATEGORY = 'Random';
@@ -1710,7 +1797,8 @@ function defaultState() {
     skippedRecurrences: [],
     randomRemoved: false,
     hours: {},
-    hourTargets: []
+    hourTargets: [],
+    weekHours: DEFAULT_WEEK_HOURS
   };
 }
 
@@ -1742,6 +1830,7 @@ function loadState() {
       });
     }
     parsed.hours = hours;
+    parsed.weekHours = Number(parsed.weekHours) > 0 ? Number(parsed.weekHours) : DEFAULT_WEEK_HOURS;
     parsed.hourTargets = Array.isArray(parsed.hourTargets)
       ? parsed.hourTargets
           .filter(e => e && typeof e === 'object')
@@ -2116,6 +2205,11 @@ function fmtHours(n) {
   return (Number.isInteger(v) ? v : v.toFixed(v * 10 % 1 === 0 ? 1 : 2)) + 'h';
 }
 
+function weekTarget() {
+  const n = Number(state.weekHours);
+  return n > 0 ? n : DEFAULT_WEEK_HOURS;
+}
+
 function hoursForWeek(weekId) {
   if (!state.hours || typeof state.hours !== 'object') state.hours = {};
   if (!Array.isArray(state.hours[weekId])) state.hours[weekId] = [];
@@ -2149,6 +2243,56 @@ function colorIndexForLabel(label) {
   ]);
   for (let i = 0; i < PALETTE.length; i++) if (!used.has(i)) return i;
   return used.size % PALETTE.length;
+}
+
+/* Set a label's colour everywhere it appears - the plan and every logged week -
+   so a slice keeps one colour across views and weeks. */
+function applyLabelColor(label, index) {
+  const key = labelKey(label);
+  getIntentions().forEach(t => { if (labelKey(t.label) === key) t.colorIndex = index; });
+  Object.keys(state.hours || {}).forEach(week => {
+    (state.hours[week] || []).forEach(s => { if (labelKey(s.label) === key) s.colorIndex = index; });
+  });
+}
+
+function setLabelColor(label, index) {
+  applyLabelColor(label, index);
+  saveState();
+  render();
+}
+
+function closeColorPicker() {
+  const pop = document.getElementById('color-pop');
+  if (pop) pop.remove();
+  document.removeEventListener('click', closeColorPicker);
+}
+
+function openColorPicker(anchorEl, currentIndex, onPick) {
+  closeColorPicker();
+  const pop = document.createElement('div');
+  pop.className = 'color-pop';
+  pop.id = 'color-pop';
+  pop.innerHTML = PALETTE.map((p, i) =>
+    `<button type="button" class="color-swatch${i === currentIndex ? ' active' : ''}" data-color-index="${i}" style="background:${p.primary}"></button>`
+  ).join('');
+  document.body.appendChild(pop);
+
+  const r = anchorEl.getBoundingClientRect();
+  const w = pop.offsetWidth || 130;
+  const h = pop.offsetHeight || 90;
+  const vw = window.innerWidth || 1024;
+  const vh = window.innerHeight || 768;
+  pop.style.left = Math.max(8, Math.min(vw - w - 8, r.left - 8)) + 'px';
+  pop.style.top = (r.bottom + 8 + h > vh ? Math.max(8, r.top - h - 8) : r.bottom + 8) + 'px';
+
+  pop.addEventListener('click', e => e.stopPropagation());
+  pop.querySelectorAll('[data-color-index]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      onPick(Number(btn.dataset.colorIndex));
+      closeColorPicker();
+    });
+  });
+  setTimeout(() => document.addEventListener('click', closeColorPicker), 0);
 }
 
 function knownHourLabels() {
@@ -2275,8 +2419,8 @@ function renderHours() {
     : hourRows();
 
   const logged = sumHours(rows);
-  const remaining = Math.max(0, WEEK_TARGET_HOURS - logged);
-  const denom = Math.max(WEEK_TARGET_HOURS, logged);
+  const remaining = Math.max(0, weekTarget() - logged);
+  const denom = Math.max(weekTarget(), logged);
 
   if (headingEl) {
     headingEl.textContent = planning ? 'Intended split' : 'Time this week';
@@ -2304,7 +2448,7 @@ function renderHours() {
         const target = r.target ? `<span class="hours-target">/${fmtHours(r.target)}</span>` : '';
         const swatch = r.grey
           ? `<span class="hours-swatch" style="background:${UNALLOCATED_COLOR}"></span>`
-          : `<span class="hours-swatch" style="background:${colorForIndex(r.colorIndex)}"></span>`;
+          : `<button type="button" class="hours-swatch" style="background:${colorForIndex(r.colorIndex)}" data-color-label="${escapeHtml(r.label)}" data-color-current="${r.colorIndex}" title="Change this slice's colour"></button>`;
         const del = r.sliceId
           ? `<button class="hours-del" data-del-hours="${r.sliceId}" title="Clear this week's hours">×</button>`
           : '<span class="hours-del-spacer"></span>';
@@ -2312,14 +2456,22 @@ function renderHours() {
       }).join('')
     : '<div class="hours-row grey"><span class="hours-label">Nothing logged yet</span></div>';
 
-  const over = logged > WEEK_TARGET_HOURS;
+  const over = logged > weekTarget();
   totalEl.className = 'hours-total' + (over ? ' over' : '');
   totalEl.innerHTML = planning
-    ? `<b>${fmtHours(logged)}</b> planned of ${WEEK_TARGET_HOURS}h${over ? ` — ${fmtHours(logged - WEEK_TARGET_HOURS)} over` : ''}`
-    : `<b>${fmtHours(logged)}</b> of ${WEEK_TARGET_HOURS}h${over ? ` — ${fmtHours(logged - WEEK_TARGET_HOURS)} over` : ` — ${fmtHours(remaining)} left`}`;
+    ? `<b>${fmtHours(logged)}</b> planned of ${weekTarget()}h${over ? ` — ${fmtHours(logged - weekTarget())} over` : ''}`
+    : `<b>${fmtHours(logged)}</b> of ${weekTarget()}h${over ? ` — ${fmtHours(logged - weekTarget())} over` : ` — ${fmtHours(remaining)} left`}`;
 
   legendEl.querySelectorAll('[data-del-hours]').forEach(btn => {
     btn.addEventListener('click', () => removeHourSlice(btn.dataset.delHours));
+  });
+  legendEl.querySelectorAll('[data-color-label]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openColorPicker(e.currentTarget, Number(btn.dataset.colorCurrent), index => {
+        setLabelColor(btn.dataset.colorLabel, index);
+      });
+    });
   });
 }
 
@@ -2329,10 +2481,10 @@ function refreshHoursRemaining() {
   const el = document.getElementById('hours-remaining');
   if (!el) return;
   const logged = sumHours(hoursForWeek(viewWeekId));
-  const left = Math.round((WEEK_TARGET_HOURS - logged) * 100) / 100;
+  const left = Math.round((weekTarget() - logged) * 100) / 100;
   el.innerHTML = left > 0
     ? `${formatWeek(viewWeekId)} — <b>${fmtHours(logged)}</b> logged, <b>${fmtHours(left)}</b> still unallocated.`
-    : `${formatWeek(viewWeekId)} — <b>${fmtHours(logged)}</b> logged, the full ${WEEK_TARGET_HOURS}h is accounted for.`;
+    : `${formatWeek(viewWeekId)} — <b>${fmtHours(logged)}</b> logged, the full ${weekTarget()}h is accounted for.`;
 }
 
 function openHoursModal(prefill) {
@@ -2399,7 +2551,7 @@ function renderIntentDraft() {
 
   rowsEl.innerHTML = intentDraft.map((row, i) => `
     <div class="intent-row" data-intent-index="${i}">
-      <span class="intent-dot" style="background:${colorForIndex(row.colorIndex)}"></span>
+      <button type="button" class="intent-dot" style="background:${colorForIndex(row.colorIndex)}" title="Change this slice's colour"></button>
       <input type="text" class="intent-label" value="${escapeHtml(row.label)}" placeholder="Label">
       <input type="number" class="intent-hours" value="${row.hours}" min="0" step="0.5">
       <button type="button" class="intent-del" title="Remove">×</button>
@@ -2419,18 +2571,33 @@ function renderIntentDraft() {
       intentDraft.splice(i, 1);
       renderIntentDraft();
     });
+    rowEl.querySelector('.intent-dot').addEventListener('click', e => {
+      e.stopPropagation();
+      openColorPicker(e.currentTarget, intentDraft[i].colorIndex, index => {
+        intentDraft[i].colorIndex = index;
+        renderIntentDraft();
+      });
+    });
   });
 
   updateIntentSummary();
+}
 
-  function updateIntentSummary() {
-    const total = sumHours(intentDraft);
-    const left = Math.round((WEEK_TARGET_HOURS - total) * 100) / 100;
-    sumEl.className = 'intent-summary' + (total > WEEK_TARGET_HOURS ? ' over' : '');
-    sumEl.innerHTML = total > WEEK_TARGET_HOURS
-      ? `<b>${fmtHours(total)}</b> planned — ${fmtHours(total - WEEK_TARGET_HOURS)} over a ${WEEK_TARGET_HOURS}h week.`
-      : `<b>${fmtHours(total)}</b> planned — ${fmtHours(left)} left to assign.`;
-  }
+function draftWeekHours() {
+  const n = Number(document.getElementById('intent-week-hours').value);
+  return n > 0 ? n : DEFAULT_WEEK_HOURS;
+}
+
+function updateIntentSummary() {
+  const sumEl = document.getElementById('intent-summary');
+  if (!sumEl || !intentDraft) return;
+  const target = draftWeekHours();
+  const total = sumHours(intentDraft);
+  const left = Math.round((target - total) * 100) / 100;
+  sumEl.className = 'intent-summary' + (total > target ? ' over' : '');
+  sumEl.innerHTML = total > target
+    ? `<b>${fmtHours(total)}</b> planned — ${fmtHours(total - target)} over a ${fmtHours(target)} week.`
+    : `<b>${fmtHours(total)}</b> planned — ${fmtHours(left)} left to assign.`;
 }
 
 function openIntentionsModal() {
@@ -2443,6 +2610,7 @@ function openIntentionsModal() {
       }))
     : hoursForWeek(viewWeekId).map(s => ({ label: s.label, hours: s.hours, colorIndex: s.colorIndex }));
   if (!intentDraft.length) intentDraft = [{ label: '', hours: 0, colorIndex: 0 }];
+  document.getElementById('intent-week-hours').value = weekTarget();
   renderIntentDraft();
   document.getElementById('intentions-modal').classList.add('show');
   const first = document.querySelector('#intent-rows .intent-label');
@@ -2463,7 +2631,10 @@ function saveIntentions() {
     if (cleaned.some(c => labelKey(c.label) === labelKey(label))) return;
     cleaned.push({ label, hours, colorIndex: row.colorIndex });
   });
+  state.weekHours = draftWeekHours();
   state.hourTargets = cleaned;
+  // a colour set here is the label's colour everywhere, including weeks already logged
+  cleaned.forEach(t => applyLabelColor(t.label, t.colorIndex));
   saveState();
   closeIntentionsModal();
   render();
@@ -3300,6 +3471,7 @@ document.querySelectorAll('[data-hours-view]').forEach(btn => {
   btn.addEventListener('click', () => { hoursView = btn.dataset.hoursView; renderHours(); });
 });
 
+document.getElementById('intent-week-hours').addEventListener('input', updateIntentSummary);
 document.getElementById('intent-save').onclick = saveIntentions;
 document.getElementById('intent-cancel').onclick = closeIntentionsModal;
 document.getElementById('intent-add').onclick = () => {
